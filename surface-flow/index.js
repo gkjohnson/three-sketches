@@ -1,62 +1,80 @@
 import { App } from '../common/App.js';
-import { SurfaceWalker, SurfacePoint, TriangleFrame } from './src/SurfaceWalker.js';
-import { Mesh, SphereGeometry, TorusBufferGeometry, Vector3 } from 'three';
+import { SurfaceWalker, SurfacePoint } from './src/SurfaceWalker.js';
+import { Group, Mesh, SphereGeometry, TorusKnotGeometry, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
-const app = new App();
-app.init( document.body );
+( async () => {
 
-const { camera, scene, renderer } = app;
-camera.position.set( 5, 5, 5 );
-camera.lookAt( 0, 0, 0 );
+    const app = new App();
+    app.init( document.body );
 
-const mesh = new Mesh( new TorusBufferGeometry() );
-mesh.material.wireframe = true;
-scene.add( mesh );
+    const { camera, scene, renderer } = app;
+    camera.position.set( 5, 5, 5 );
+    camera.lookAt( 0, 0, 0 );
+    renderer.setClearColor( 0x111111 );
 
-const surf = new SurfaceWalker( mesh.geometry );
-const point = new SurfacePoint();
-const frame = new TriangleFrame();
-surf._getFrame( 0, frame );
+    const controls = new OrbitControls( camera, renderer.domElement );
 
-point.add( frame.a ).add( frame.b ).add( frame.c ).multiplyScalar( 1 / 3 );
-point.index = 0;
+    // const mesh = new Mesh( new TorusKnotGeometry() );
+    // scene.add( mesh );
 
-const pmesh = new Mesh( new SphereGeometry( 0.01 ) );
-pmesh.material.color.set( 0xff0000 );
-pmesh.position.copy( point );
-scene.add( pmesh );
+    const gltf = await new GLTFLoader().setMeshoptDecoder( MeshoptDecoder ).loadAsync( 'https://raw.githubusercontent.com/gkjohnson/3d-demo-data/main/models/threedscans/Hosmer.glb' );
+    const mesh = gltf.scene.children[ 0 ];
+    mesh.geometry.scale( 0.01, 0.01, 0.01 );
+    mesh.geometry.rotateX( - Math.PI / 2 );
+    // scene.add( mesh );
 
-const controls = new OrbitControls( camera, renderer.domElement );
+    const container = new Group();
+    scene.add( container );
 
-const dir = new Vector3( 0, 0, 0.19 );
-surf.movePoint( point, dir, point, dir );
+    const surf = new SurfaceWalker( mesh.geometry );
 
-const p2 = pmesh.clone();
-p2.position.copy( point );
-scene.add( p2 );
+    const sampler = new MeshSurfaceSampler( mesh );
+    sampler.build();
+    sampler.sampleWeightedFaceIndex = function() {
+
+        const cumulativeTotal = this.distribution[ this.distribution.length - 1 ];
+        return this.binarySearch( this.randomFunction() * cumulativeTotal );
+
+    };
+
+    const pointInfo = [];
+    for ( let i = 0; i < 1000; i ++ ) {
+
+        const mesh = new Mesh( new SphereGeometry( 0.01 ) );
+        mesh.material.color.set( 0xffffff );
+
+        const surfacePoint = new SurfacePoint();
+        surfacePoint.index = sampler.sampleWeightedFaceIndex();
+        sampler.sampleFace( surfacePoint.index, surfacePoint );
+
+        mesh.position.copy( surfacePoint );
+        container.add( mesh );
+
+        const info = {
+            surfacePoint,
+            mesh,
+            direction: new Vector3( 0, 0, 1 ).randomDirection(),
+        };
+        pointInfo.push( info );
+
+    }
 
 
+    app.update = () => {
 
+        pointInfo.forEach( info => {
 
+            const { surfacePoint, mesh, direction } = info;
+            direction.normalize().multiplyScalar( 0.001 );
+            surf.movePoint( surfacePoint, direction, surfacePoint, direction );
+            mesh.position.copy( surfacePoint );
 
+        } );
 
-// surf._getFrame( 97, frame );
-// point.copy( frame.a ).add( frame.b ).add( frame.c ).multiplyScalar( 1 / 3 );
-// point.index = 97;
+    };
 
-// const pm2 = new Mesh( new SphereGeometry( 0.01 ) );
-// pm2.material.color.set( 0x00ff00 );
-// pm2.position.copy( point );
-// scene.add( pm2 );
-
-
-
-// app.update = () => {
-
-//     dir.normalize().multiplyScalar( 0.000001 );
-//     surf.movePoint( point, dir, point, dir );
-//     pmesh.position.copy( point );
-
-// };
-
+} )();

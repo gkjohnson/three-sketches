@@ -168,16 +168,12 @@ export class SurfaceWalker {
         _frame0.projectDirection( _ray.direction );
         _frame0.projectPoint( _ray.origin );
 
-        console.log( dist );
-
         targetPoint.index = p.index;
         while( dist > 0 ) {
 
             const edgeIndex = _frame0.intersectEdge( _ray, targetPoint );
             const index = halfEdgeMap.getSiblingTriangleIndex( targetPoint.index, edgeIndex );
             const hitDist = _ray.origin.distanceTo( targetPoint );
-
-            console.log('NEXT', index, hitDist );
 
             if ( hitDist < dist ) {
 
@@ -188,7 +184,7 @@ export class SurfaceWalker {
 
                 rotationBetweenTriangles( _frame0, _frame1, _mat );
                 _ray.origin.copy( targetPoint );
-                // _ray.direction.transformDirection( _mat );
+                _ray.direction.transformDirection( _mat );
 
                 _frame0.copy( _frame1 );
 
