@@ -31,7 +31,7 @@ const SPEED = 0.01 * 120;
     mesh.geometry.scale( 0.005, 0.005, 0.005 );
     // mesh.geometry.rotateX( - Math.PI / 2 );
     mesh.geometry.center();
-    // scene.add( mesh );
+    scene.add( mesh );
 
     mesh.material = new MeshBasicMaterial();
     mesh.material.transparent = true;
@@ -68,7 +68,6 @@ const SPEED = 0.01 * 120;
     } );
     trails.material.opacity = 0.5;
     trails.material.transparent = true;
-    trails.material.depthWrite = false;
     container.add( trails );
 
     const v0 = new Vector3();
@@ -143,7 +142,7 @@ const SPEED = 0.01 * 120;
             spheres.setPosition( i, temp, 0.0005 * dist );
             trails.pushPoint( i, temp );
 
-            if ( Math.random() < 0.5 * SPEED ) {
+            if ( Math.random() < 0.5 * SPEED * delta ) {
 
                 surfacePoint.index = sampler.sampleWeightedFaceIndex();
                 sampler.sampleFace( surfacePoint.index, surfacePoint );
