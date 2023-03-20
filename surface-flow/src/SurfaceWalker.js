@@ -7,6 +7,7 @@ const _ray = new Ray();
 
 const _plane = new Plane();
 const _mat = new Matrix4();
+const _planeNormal = new Vector3();
 
 function rotationBetweenTriangles( fromTri, toTri, target ) {
 
@@ -185,17 +186,20 @@ export class SurfaceWalker {
 
                 if ( this.planarWalk ) {
 
-                    _frame1.projectDirection( _ray.direction );
-                    _frame1.projectPoint( targetPoint );
-
-                } else {
-
-                    rotationBetweenTriangles( _frame0, _frame1, _mat );
-                    _ray.direction.transformDirection( _mat );
+                    _planeNormal.crossVectors( _ray.direction, _frame0.normal );
 
                 }
 
+                rotationBetweenTriangles( _frame0, _frame1, _mat );
+                _ray.direction.transformDirection( _mat );
                 _ray.origin.copy( targetPoint );
+
+                if ( this.planarWalk ) {
+
+                    const v = _planeNormal.dot( _ray.direction );
+                    _ray.direction.addScaledVector( _planeNormal, - v );
+
+                }
 
                 _frame0.copy( _frame1 );
 
