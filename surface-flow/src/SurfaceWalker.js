@@ -127,6 +127,7 @@ export class SurfaceWalker {
 
         this.halfEdgeMap = new HalfEdgeMap( geometry );
         this.geometry = geometry;
+        this.planarWalk = false;
 
     }
 
@@ -182,9 +183,19 @@ export class SurfaceWalker {
                 this._getFrame( index, _frame1 );
                 targetPoint.index = index;
 
-                rotationBetweenTriangles( _frame0, _frame1, _mat );
+                if ( this.planarWalk ) {
+
+                    _frame1.projectDirection( _ray.direction );
+                    _frame1.projectPoint( targetPoint );
+
+                } else {
+
+                    rotationBetweenTriangles( _frame0, _frame1, _mat );
+                    _ray.direction.transformDirection( _mat );
+
+                }
+
                 _ray.origin.copy( targetPoint );
-                _ray.direction.transformDirection( _mat );
 
                 _frame0.copy( _frame1 );
 

@@ -54,7 +54,7 @@ export class InstancedTrails extends LineSegments {
 
     }
 
-    pushPoint( index, v ) {
+    pushPoint( index, v, breakTrail = false ) {
 
         const nextSeg = this.nextSegment[ index ];
         let prevSeg = nextSeg - 1;
@@ -69,8 +69,17 @@ export class InstancedTrails extends LineSegments {
         const prevLife = lifeIndex.getX( index * segmentCount * 2 + prevSeg * 2 );
         _vec.fromBufferAttribute( position, index * segmentCount * 2 + prevSeg * 2 + 1 );
 
-        this._setSegment( index, nextSeg, _vec, v );
-        this._setSegmentLife( index, nextSeg, prevLife + 1 );
+        if ( breakTrail ) {
+
+            this._setSegment( index, nextSeg, v, v );
+            this._setSegmentLife( index, nextSeg, prevLife + 1 );
+
+        } else {
+
+            this._setSegment( index, nextSeg, _vec, v );
+            this._setSegmentLife( index, nextSeg, prevLife + 1 );
+
+        }
 
         this.nextSegment[ index ] = ( this.nextSegment[ index ] + 1 ) % this.segmentCount;
         position.needsUpdate = true;
