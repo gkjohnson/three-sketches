@@ -9,8 +9,8 @@ import { InstancedSpheres } from './src/InstancedSphere.js';
 import { InstancedTrails } from './src/InstancedTrails.js';
 
 const POINT_COUNT = 500;
-const SEGMENTS_COUNT = 1000;
-const SPEED = 0.005;
+const SEGMENTS_COUNT = 5000;
+const SPEED = 0.01;
 ( async () => {
 
     const app = new App();
@@ -22,8 +22,8 @@ const SPEED = 0.005;
     renderer.setClearColor( 0x111111 );
 
     const controls = new OrbitControls( camera, renderer.domElement );
-    controls.autoRotateSpeed = 0.5;
-    controls.autoRotate = true;
+    // controls.autoRotateSpeed = 0.5;
+    // controls.autoRotate = true;
 
     const gltf = await new GLTFLoader().setMeshoptDecoder( MeshoptDecoder ).loadAsync( 'https://raw.githubusercontent.com/gkjohnson/3d-demo-data/main/models/threedscans/Le_Transi_De_Rene_De_Chalon.glb' );
     const mesh = gltf.scene.children[ 0 ];
@@ -46,6 +46,7 @@ const SPEED = 0.005;
     scene.add( container );
 
     const surf = new SurfaceWalker( mesh.geometry );
+    surf.planarWalk = true;
 
     const sampler = new MeshSurfaceSampler( mesh );
     sampler.build();

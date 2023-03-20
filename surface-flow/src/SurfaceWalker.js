@@ -174,6 +174,12 @@ export class SurfaceWalker {
         while( dist > 0 ) {
 
             const edgeIndex = _frame0.intersectEdge( _ray, targetPoint );
+            if ( edgeIndex == - 1 ) {
+
+                break;
+
+            }
+
             const index = halfEdgeMap.getSiblingTriangleIndex( targetPoint.index, edgeIndex );
             const hitDist = _ray.origin.distanceTo( targetPoint );
 
