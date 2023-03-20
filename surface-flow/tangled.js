@@ -17,7 +17,7 @@ const SPEED = 0.005;
     app.init( document.body );
 
     const { camera, scene, renderer } = app;
-    camera.position.set( 6, 0, - 6 );
+    camera.position.set( 4, 0, - 7 );
     camera.lookAt( 0, 0, 0 );
     renderer.setClearColor( 0x111111 );
 
@@ -31,7 +31,17 @@ const SPEED = 0.005;
     mesh.geometry.scale( 0.005, 0.005, 0.005 );
     mesh.geometry.rotateX( - Math.PI / 2 );
     mesh.geometry.center();
-    // scene.add( mesh );
+    scene.add( mesh );
+
+    mesh.material = new MeshBasicMaterial();
+    mesh.material.transparent = true;
+    mesh.material.color.set( 0x111111 ).convertSRGBToLinear();
+    mesh.material.opacity = 0.5;
+    mesh.material.depthWrite = false;
+    mesh.material.polygonOffset = true;
+    mesh.material.polygonOffsetUnits = 1;
+    mesh.material.polygonOffsetFactor = 1;
+    mesh.renderOrder = 1;
 
     const container = new Group();
     scene.add( container );
@@ -53,7 +63,7 @@ const SPEED = 0.005;
     container.add( trails );
     trails.material.opacity = 0.35;
     trails.material.transparent = true;
-    trails.material.depthWrite = false;
+    // trails.material.depthWrite = false;
 
     const pointInfo = [];
     for ( let i = 0; i < POINT_COUNT; i ++ ) {
