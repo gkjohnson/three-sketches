@@ -11,10 +11,10 @@ export class FadeLineMaterial extends MaterialBase {
 
                 color: { value: new Color() },
                 opacity: { value: 1 },
-                maxIndex: { value: 10 },
+                currIndex: { value: 10 },
+                segmentCount: { value: 10 },
 
             },
-
 
 			vertexShader: /* glsl */`
 
@@ -35,13 +35,18 @@ export class FadeLineMaterial extends MaterialBase {
 
                 uniform vec3 color;
                 uniform float opacity;
-                uniform float maxIndex;
+                uniform float currIndex;
+                uniform float segmentCount;
                 varying float vLifeIndex;
 
                 void main() {
 
+                    float currValue = vLifeIndex - ( currIndex - segmentCount );
+
                     gl_FragColor.rgb = color;
-                    gl_FragColor.a = opacity * ( ( maxIndex - vLifeIndex ) / ( maxIndex - 1.0 ) );
+                    gl_FragColor.a = opacity * max( currValue / segmentCount, 0.0 );
+
+                    #include <encodings_fragment>
 
                 }
 

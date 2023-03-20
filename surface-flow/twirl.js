@@ -7,9 +7,10 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { InstancedSpheres } from './src/InstancedSphere.js';
 import { InstancedTrails } from './src/InstancedTrails.js';
+import { FadeLineMaterial } from './src/FadeLineMaterial.js';
 
-const POINT_COUNT = 500;
-const SEGMENTS_COUNT = 5000;
+const POINT_COUNT = 100;
+const SEGMENTS_COUNT = 1000;
 const SPEED = 0.01;
 ( async () => {
 
@@ -61,7 +62,11 @@ const SPEED = 0.01;
     container.add( spheres );
 
     const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
-    trails.material.opacity = 0.25;
+    trails.material = new FadeLineMaterial( {
+        segmentCount: SEGMENTS_COUNT,
+        currIndex: 0,
+    } );
+    trails.material.opacity = 0.5;
     trails.material.transparent = true;
     trails.depthTest = false;
     container.add( trails );
@@ -99,6 +104,8 @@ const SPEED = 0.01;
     app.update = () => {
 
         controls.update();
+
+        trails.material.currIndex ++;
         for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
 
             const info = pointInfo[ i ];
