@@ -1,4 +1,4 @@
-import { PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
+import { Loader, PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
 export class App {
 
     constructor() {
@@ -24,6 +24,7 @@ export class App {
         this.camera = camera;
         this.renderer = renderer;
         this.update = null;
+        this.loadingElement = null;
 
     }
 
@@ -35,6 +36,27 @@ export class App {
         window.addEventListener( 'resize', onResize );
         onResize();
 
+        const loadingElement = document.createElement( 'div' );
+        loadingElement.innerText = 'Loading';
+        loadingElement.style.position = 'absolute';
+        loadingElement.style.left = '0';
+        loadingElement.style.bottom = '0';
+        loadingElement.style.color = 'white';
+        loadingElement.style.fontFamily = 'Helvetica, Arial, sans-serif';
+        loadingElement.style.fontWeight = 'lighter';
+        loadingElement.style.padding = '20px';
+        loadingElement.style.fontSize = '1em';
+        loadingElement.style.transition = 'opacity 0.1s ease';
+        loadingElement.style.opacity = '0';
+        setTimeout( () => {
+
+            loadingElement.style.opacity = '0.5';
+
+        }, 100 );
+
+        element.appendChild( loadingElement );
+        this.loadingElement = loadingElement;
+
         function onResize() {
 
             renderer.setSize( window.innerWidth, window.innerHeight );
@@ -44,6 +66,12 @@ export class App {
             camera.updateProjectionMatrix();
 
         }
+
+    }
+
+    toggleLoading() {
+
+        this.loadingElement.style.opacity = '0';
 
     }
 

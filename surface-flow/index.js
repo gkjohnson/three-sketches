@@ -30,6 +30,7 @@ const SPEED = 0.005;
     const mesh = gltf.scene.children[ 0 ];
     mesh.geometry.scale( 0.005, 0.005, 0.005 );
     mesh.geometry.rotateX( - Math.PI / 2 );
+    mesh.geometry.center();
     // scene.add( mesh );
 
     const container = new Group();
@@ -73,6 +74,7 @@ const SPEED = 0.005;
 
     const normal = new Vector3();
     const temp = new Vector3();
+    app.toggleLoading();
     app.update = () => {
 
         for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
