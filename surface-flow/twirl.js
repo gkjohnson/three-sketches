@@ -62,7 +62,7 @@ const SPEED = 0.01;
 
     const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
     container.add( trails );
-    trails.material.opacity = 0.35;
+    trails.material.opacity = 0.25;
     trails.material.transparent = true;
     trails.depthTest = false;
 
