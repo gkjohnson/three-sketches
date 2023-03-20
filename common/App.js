@@ -6,13 +6,20 @@ export class App {
         const renderer = new WebGLRenderer( { antialias: true } );
         renderer.outputEncoding = sRGBEncoding;
 
-        let startTime = window.performance.now();
+        let startTime = - 1;
         renderer.setAnimationLoop( () => {
 
             const newTime = window.performance.now();
+            if ( startTime === - 1 ) {
+
+                startTime = newTime;
+
+            }
+
             if ( this.update ) {
 
-                this.update( 1e-3 * ( newTime - startTime ) );
+                const delta = Math.min( newTime - startTime, 1000 / 30 );
+                this.update( 1e-3 * delta );
 
             }
 

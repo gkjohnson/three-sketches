@@ -10,7 +10,7 @@ import { InstancedTrails } from './src/InstancedTrails.js';
 
 const POINT_COUNT = 100;
 const SEGMENTS_COUNT = 2000;
-const SPEED = 0.005;
+const SPEED = 0.005 * 120;
 ( async () => {
 
     const app = new App();
@@ -61,9 +61,9 @@ const SPEED = 0.005;
 
     const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
     container.add( trails );
-    trails.material.color.set( 0xffffff ).multiplyScalar( 0.5 ).convertSRGBToLinear();
-    // trails.material.opacity = 0.35;
-    // trails.material.transparent = true;
+    // trails.material.color.set( 0xffffff ).multiplyScalar( 0.5 ).convertSRGBToLinear();
+    trails.material.opacity = 0.35;
+    trails.material.transparent = true;
 
     const pointInfo = [];
     for ( let i = 0; i < POINT_COUNT; i ++ ) {
@@ -85,13 +85,13 @@ const SPEED = 0.005;
     const normal = new Vector3();
     const temp = new Vector3();
     app.toggleLoading();
-    app.update = () => {
+    app.update = delta => {
 
         for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
 
             const info = pointInfo[ i ];
             const { surfacePoint, direction } = info;
-            direction.normalize().multiplyScalar( SPEED );
+            direction.normalize().multiplyScalar( SPEED * delta );
             surf.movePoint( surfacePoint, direction, surfacePoint, direction, normal );
 
             temp.copy( surfacePoint );//.addScaledVector( normal, 0.2 * ( 1.0 + Math.sin( window.performance.now() * 0.01 ) ) );

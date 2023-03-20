@@ -11,7 +11,7 @@ import { FadeLineMaterial } from './src/FadeLineMaterial.js';
 
 const POINT_COUNT = 100;
 const SEGMENTS_COUNT = 1000;
-const SPEED = 0.01;
+const SPEED = 0.01 * 120;
 ( async () => {
 
     const app = new App();
@@ -101,7 +101,7 @@ const SPEED = 0.01;
     const normal = new Vector3();
     const temp = new Vector3();
     app.toggleLoading();
-    app.update = () => {
+    app.update = delta => {
 
         controls.update();
 
@@ -134,7 +134,7 @@ const SPEED = 0.01;
 
             direction.copy( v2 );
 
-            direction.normalize().multiplyScalar( SPEED );
+            direction.normalize().multiplyScalar( SPEED * delta );
             surf.movePoint( surfacePoint, direction, surfacePoint, direction, normal );
 
 
