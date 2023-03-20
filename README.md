@@ -6,4 +6,4 @@ Collection of generative three.js sketches and visual experiments.
 
 [Tangled](https://gkjohnson.github.io/three-sketches/surface-flow/tangled.html)
 
-[Twirled](https://gkjohnson.github.io/three-sketches/surface-flow/twirled.html)
+[Twirl](https://gkjohnson.github.io/three-sketches/surface-flow/twirl.html)
