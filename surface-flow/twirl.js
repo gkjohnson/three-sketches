@@ -31,7 +31,7 @@ const SPEED = 0.01;
     mesh.geometry.scale( 0.005, 0.005, 0.005 );
     // mesh.geometry.rotateX( - Math.PI / 2 );
     mesh.geometry.center();
-    scene.add( mesh );
+    // scene.add( mesh );
 
     mesh.material = new MeshBasicMaterial();
     mesh.material.transparent = true;
@@ -68,7 +68,7 @@ const SPEED = 0.01;
     } );
     trails.material.opacity = 0.5;
     trails.material.transparent = true;
-    trails.depthTest = false;
+    trails.material.depthWrite = false;
     container.add( trails );
 
     const v0 = new Vector3();

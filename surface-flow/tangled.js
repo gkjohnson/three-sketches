@@ -61,9 +61,9 @@ const SPEED = 0.005;
 
     const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
     container.add( trails );
-    trails.material.opacity = 0.35;
-    trails.material.transparent = true;
-    // trails.material.depthWrite = false;
+    trails.material.color.set( 0xffffff ).multiplyScalar( 0.5 ).convertSRGBToLinear();
+    // trails.material.opacity = 0.35;
+    // trails.material.transparent = true;
 
     const pointInfo = [];
     for ( let i = 0; i < POINT_COUNT; i ++ ) {

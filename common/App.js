@@ -5,14 +5,18 @@ export class App {
         
         const renderer = new WebGLRenderer( { antialias: true } );
         renderer.outputEncoding = sRGBEncoding;
+
+        let startTime = window.performance.now();
         renderer.setAnimationLoop( () => {
 
+            const newTime = window.performance.now();
             if ( this.update ) {
 
-                this.update();
+                this.update( 1e-3 * ( newTime - startTime ) );
 
             }
 
+            startTime = newTime;
             renderer.render( this.scene, this.camera );
 
         } );
