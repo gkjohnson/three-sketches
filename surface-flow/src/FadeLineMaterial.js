@@ -3,18 +3,18 @@ import { MaterialBase } from '../../common/MaterialBase.js';
 
 export class FadeLineMaterial extends MaterialBase {
 
-    constructor( params ) {
+	constructor( params ) {
 
-        super( {
+		super( {
 
-            uniforms: {
+			uniforms: {
 
-                color: { value: new Color() },
-                opacity: { value: 1 },
-                currIndex: { value: 10 },
-                segmentCount: { value: 10 },
+				color: { value: new Color() },
+				opacity: { value: 1 },
+				currIndex: { value: 10 },
+				segmentCount: { value: 10 },
 
-            },
+			},
 
 			vertexShader: /* glsl */`
 
@@ -31,7 +31,7 @@ export class FadeLineMaterial extends MaterialBase {
 
             `,
 
-            fragmentShader: /* glsl */`
+			fragmentShader: /* glsl */`
 
                 uniform vec3 color;
                 uniform float opacity;
@@ -52,10 +52,10 @@ export class FadeLineMaterial extends MaterialBase {
 
             `,
 
-        } )
+		} );
 
-        this.setValues( params );
+		this.setValues( params );
 
-    }
+	}
 
 }

@@ -1,89 +1,89 @@
 import { Loader, PerspectiveCamera, Scene, sRGBEncoding, WebGLRenderer } from 'three';
 export class App {
 
-    constructor() {
-        
-        const renderer = new WebGLRenderer( { antialias: true } );
-        renderer.outputEncoding = sRGBEncoding;
+	constructor() {
 
-        let startTime = - 1;
-        renderer.setAnimationLoop( () => {
+		const renderer = new WebGLRenderer( { antialias: true } );
+		renderer.outputEncoding = sRGBEncoding;
 
-            const newTime = window.performance.now();
-            if ( startTime === - 1 ) {
+		let startTime = - 1;
+		renderer.setAnimationLoop( () => {
 
-                startTime = newTime;
+			const newTime = window.performance.now();
+			if ( startTime === - 1 ) {
 
-            }
+				startTime = newTime;
 
-            if ( this.update ) {
+			}
 
-                const delta = Math.min( newTime - startTime, 1000 / 30 );
-                this.update( 1e-3 * delta );
+			if ( this.update ) {
 
-            }
+				const delta = Math.min( newTime - startTime, 1000 / 30 );
+				this.update( 1e-3 * delta );
 
-            startTime = newTime;
-            renderer.render( this.scene, this.camera );
+			}
 
-        } );
+			startTime = newTime;
+			renderer.render( this.scene, this.camera );
 
-        const camera = new PerspectiveCamera();
-        camera.position.z = 5;
+		} );
 
-        this.scene = new Scene();
-        this.camera = camera;
-        this.renderer = renderer;
-        this.update = null;
-        this.loadingElement = null;
+		const camera = new PerspectiveCamera();
+		camera.position.z = 5;
 
-    }
+		this.scene = new Scene();
+		this.camera = camera;
+		this.renderer = renderer;
+		this.update = null;
+		this.loadingElement = null;
 
-    init( element ) {
+	}
 
-        const { renderer, camera } = this;
-        element.appendChild( renderer.domElement );
+	init( element ) {
 
-        window.addEventListener( 'resize', onResize );
-        onResize();
+		const { renderer, camera } = this;
+		element.appendChild( renderer.domElement );
 
-        const loadingElement = document.createElement( 'div' );
-        loadingElement.innerText = 'Loading';
-        loadingElement.style.position = 'absolute';
-        loadingElement.style.left = '0';
-        loadingElement.style.bottom = '0';
-        loadingElement.style.color = 'white';
-        loadingElement.style.fontFamily = 'Helvetica, Arial, sans-serif';
-        loadingElement.style.fontWeight = 'lighter';
-        loadingElement.style.padding = '20px';
-        loadingElement.style.fontSize = '1em';
-        loadingElement.style.transition = 'opacity 0.1s ease';
-        loadingElement.style.opacity = '0';
-        setTimeout( () => {
+		window.addEventListener( 'resize', onResize );
+		onResize();
 
-            loadingElement.style.opacity = '0.5';
+		const loadingElement = document.createElement( 'div' );
+		loadingElement.innerText = 'Loading';
+		loadingElement.style.position = 'absolute';
+		loadingElement.style.left = '0';
+		loadingElement.style.bottom = '0';
+		loadingElement.style.color = 'white';
+		loadingElement.style.fontFamily = 'Helvetica, Arial, sans-serif';
+		loadingElement.style.fontWeight = 'lighter';
+		loadingElement.style.padding = '20px';
+		loadingElement.style.fontSize = '1em';
+		loadingElement.style.transition = 'opacity 0.1s ease';
+		loadingElement.style.opacity = '0';
+		setTimeout( () => {
 
-        }, 100 );
+			loadingElement.style.opacity = '0.5';
 
-        element.appendChild( loadingElement );
-        this.loadingElement = loadingElement;
+		}, 100 );
 
-        function onResize() {
+		element.appendChild( loadingElement );
+		this.loadingElement = loadingElement;
 
-            renderer.setSize( window.innerWidth, window.innerHeight );
-            renderer.setPixelRatio( window.devicePixelRatio );
+		function onResize() {
 
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
+			renderer.setSize( window.innerWidth, window.innerHeight );
+			renderer.setPixelRatio( window.devicePixelRatio );
 
-        }
+			camera.aspect = window.innerWidth / window.innerHeight;
+			camera.updateProjectionMatrix();
 
-    }
+		}
 
-    toggleLoading() {
+	}
 
-        this.loadingElement.style.opacity = '0';
+	toggleLoading() {
 
-    }
+		this.loadingElement.style.opacity = '0';
+
+	}
 
 }
