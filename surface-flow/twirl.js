@@ -61,10 +61,10 @@ const SPEED = 0.01;
     container.add( spheres );
 
     const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
-    container.add( trails );
     trails.material.opacity = 0.25;
     trails.material.transparent = true;
     trails.depthTest = false;
+    container.add( trails );
 
     const v0 = new Vector3();
     const v1 = new Vector3();
