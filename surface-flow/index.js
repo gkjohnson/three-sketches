@@ -1,18 +1,23 @@
 import { App } from '../common/App.js';
 import { SurfaceWalker, SurfacePoint } from './src/SurfaceWalker.js';
-import { Group, Mesh, SphereGeometry, TorusKnotGeometry, Vector3 } from 'three';
+import { Group, Mesh, MeshBasicMaterial, SphereGeometry, TorusKnotGeometry, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { InstancedSpheres } from './src/InstancedSphere.js';
+import { InstancedTrails } from './src/InstancedTrails.js';
 
+const POINT_COUNT = 100;
+const SEGMENTS_COUNT = 2000;
+const SPEED = 0.005;
 ( async () => {
 
     const app = new App();
     app.init( document.body );
 
     const { camera, scene, renderer } = app;
-    camera.position.set( 5, 5, 5 );
+    camera.position.set( 6, 0, - 6 );
     camera.lookAt( 0, 0, 0 );
     renderer.setClearColor( 0x111111 );
 
@@ -23,7 +28,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
     const gltf = await new GLTFLoader().setMeshoptDecoder( MeshoptDecoder ).loadAsync( 'https://raw.githubusercontent.com/gkjohnson/3d-demo-data/main/models/threedscans/Hosmer.glb' );
     const mesh = gltf.scene.children[ 0 ];
-    mesh.geometry.scale( 0.01, 0.01, 0.01 );
+    mesh.geometry.scale( 0.005, 0.005, 0.005 );
     mesh.geometry.rotateX( - Math.PI / 2 );
     // scene.add( mesh );
 
@@ -41,22 +46,24 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 
     };
 
-    const pointInfo = [];
-    for ( let i = 0; i < 1000; i ++ ) {
+    const spheres = new InstancedSpheres( new MeshBasicMaterial(), POINT_COUNT );
 
-        const mesh = new Mesh( new SphereGeometry( 0.01 ) );
-        mesh.material.color.set( 0xffffff );
+    const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
+    container.add( trails );
+    trails.material.opacity = 0.35;
+    trails.material.transparent = true;
+    trails.material.depthWrite = false;
+
+    const pointInfo = [];
+    for ( let i = 0; i < POINT_COUNT; i ++ ) {
 
         const surfacePoint = new SurfacePoint();
         surfacePoint.index = sampler.sampleWeightedFaceIndex();
         sampler.sampleFace( surfacePoint.index, surfacePoint );
-
-        mesh.position.copy( surfacePoint );
-        container.add( mesh );
+        trails.init( i, surfacePoint );
 
         const info = {
             surfacePoint,
-            mesh,
             direction: new Vector3( 0, 0, 1 ).randomDirection(),
         };
         pointInfo.push( info );
@@ -64,16 +71,22 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
     }
 
 
+    const normal = new Vector3();
+    const temp = new Vector3();
     app.update = () => {
 
-        pointInfo.forEach( info => {
+        for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
 
-            const { surfacePoint, mesh, direction } = info;
-            direction.normalize().multiplyScalar( 0.001 );
-            surf.movePoint( surfacePoint, direction, surfacePoint, direction );
-            mesh.position.copy( surfacePoint );
+            const info = pointInfo[ i ];
+            const { surfacePoint, direction } = info;
+            direction.normalize().multiplyScalar( SPEED );
+            surf.movePoint( surfacePoint, direction, surfacePoint, direction, normal );
 
-        } );
+            temp.copy( surfacePoint );//.addScaledVector( normal, 0.2 * ( 1.0 + Math.sin( window.performance.now() * 0.01 ) ) );
+            spheres.setPosition( i, temp, 0.01 );
+            trails.pushPoint( i, temp );
+
+        }
 
     };
 

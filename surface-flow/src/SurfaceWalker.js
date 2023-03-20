@@ -155,7 +155,7 @@ export class SurfaceWalker {
 
     }
 
-    movePoint( p, dir, targetPoint, targetDir ) {
+    movePoint( p, dir, targetPoint, targetDir, targetNormal ) {
 
         const { halfEdgeMap } = this;
 
@@ -198,6 +198,11 @@ export class SurfaceWalker {
         }
 
         targetDir.copy( _ray.direction );
+        if ( targetNormal ) {
+            
+            targetNormal.copy( _frame0.normal );
+
+        }
 
     }
 
