@@ -12,7 +12,7 @@ import { drawTrails } from './src/drawTrails.js';
 import { CurlGenerator } from '../common/CurlGenerator.js';
 
 const POINT_COUNT = 1000;
-const SEGMENTS_COUNT = 2000;
+const SEGMENTS_COUNT = 3000;
 ( async () => {
 
 	let speed = 0.005 * 120;
@@ -53,8 +53,8 @@ const SEGMENTS_COUNT = 2000;
 	mesh.material.color.set( 0x111111 ).convertSRGBToLinear();
 	mesh.material.opacity = 0.5;
 	mesh.material.polygonOffset = true;
-	mesh.material.polygonOffsetUnits = 2;
-	mesh.material.polygonOffsetFactor = 2;
+	mesh.material.polygonOffsetUnits = 3;
+	mesh.material.polygonOffsetFactor = 3;
 
 	const surf = new SurfaceWalker( mesh.geometry );
 
@@ -71,11 +71,9 @@ const SEGMENTS_COUNT = 2000;
 
 	const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
 	trails.material = new FadeLineMaterial( {
-
-		segmentCount: SEGMENTS_COUNT,
-
+		fadeMs: 30000,
 	} );
-	trails.material.opacity = 0.35;
+	trails.material.opacity = 0.5;
 	trails.material.transparent = true;
 	trails.depthWrite = false;
 
@@ -101,8 +99,6 @@ const SEGMENTS_COUNT = 2000;
 	app.toggleLoading();
 	app.update = delta => {
 
-		controls.update();
-		trails.material.currIndex ++;
 		for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
 
 			const info = pointInfo[ i ];
@@ -119,7 +115,7 @@ const SEGMENTS_COUNT = 2000;
 
 			curlGenerator.sample3d( ...surfacePoint, temp );
 
-			if ( Math.random() < 0.01 || Math.abs( temp.normalize().dot( normal ) ) > 1 - 1e-1 * Math.random() ) {
+			if ( Math.random() < 0.0025 || Math.abs( temp.normalize().dot( normal ) ) > 1 - 1e-1 * Math.random() ) {
 
 				surfacePoint.index = sampler.sampleWeightedFaceIndex();
 				sampler.sampleFace( surfacePoint.index, surfacePoint );
@@ -129,6 +125,9 @@ const SEGMENTS_COUNT = 2000;
 			}
 
 		}
+
+		controls.update();
+		trails.material.currentMs = window.performance.now();
 
 		renderer.autoClear = false;
 		renderer.clear();

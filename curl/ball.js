@@ -41,8 +41,7 @@ function randomSampleSphere() {
 
 	const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
 	trails.material = new FadeLineMaterial( {
-		segmentCount: SEGMENTS_COUNT,
-		currIndex: 0,
+		fadeMs: 8333.0
 	} );
 	trails.material.transparent = true;
 	trails.material.opacity = 0.5;
@@ -63,8 +62,6 @@ function randomSampleSphere() {
 	app.toggleLoading();
 	app.update = () => {
 
-		trails.material.currIndex ++;
-		controls.update();
 
 		const result = new Vector3();
 		for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
@@ -84,6 +81,9 @@ function randomSampleSphere() {
 			}
 
 		}
+
+		controls.update();
+		trails.material.currentMs = window.performance.now();
 
 	};
 

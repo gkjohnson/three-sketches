@@ -8,7 +8,7 @@ export class InstancedTrails extends LineSegments {
 		const geometry = new BufferGeometry();
 		const posArr = new Float32Array( trailCount * segmentCount * 2 * 3 );
 		geometry.setAttribute( 'position', new BufferAttribute( posArr, 3, false ) );
-		geometry.setAttribute( 'lifeIndex', new BufferAttribute( new Uint32Array( trailCount * segmentCount * 2 ), 1, false ) );
+		geometry.setAttribute( 'creationMs', new BufferAttribute( new Uint32Array( trailCount * segmentCount * 2 ), 1, false ) );
 
 		super( geometry, material );
 
@@ -28,14 +28,14 @@ export class InstancedTrails extends LineSegments {
 
 	}
 
-	_setSegmentLife( index, segment, value ) {
+	_setSegmentLife( index, segment, start, end ) {
 
 		const { segmentCount, geometry } = this;
-		const { lifeIndex } = geometry.attributes;
+		const { creationMs } = geometry.attributes;
 
 		const offset = index * segmentCount * 2;
-		lifeIndex.setX( offset + segment * 2 + 0, value );
-		lifeIndex.setX( offset + segment * 2 + 1, value );
+		creationMs.setX( offset + segment * 2 + 0, start );
+		creationMs.setX( offset + segment * 2 + 1, end );
 
 	}
 
@@ -65,25 +65,26 @@ export class InstancedTrails extends LineSegments {
 		}
 
 		const { geometry, segmentCount } = this;
-		const { position, lifeIndex } = geometry.attributes;
-		const prevLife = lifeIndex.getX( index * segmentCount * 2 + prevSeg * 2 );
-		_vec.fromBufferAttribute( position, index * segmentCount * 2 + prevSeg * 2 + 1 );
+		const { position, creationMs } = geometry.attributes;
 
 		if ( breakTrail ) {
 
 			this._setSegment( index, nextSeg, v, v );
-			this._setSegmentLife( index, nextSeg, prevLife + 1 );
+			this._setSegmentLife( index, nextSeg, window.performance.now(), window.performance.now() );
 
 		} else {
 
+			_vec.fromBufferAttribute( position, index * segmentCount * 2 + prevSeg * 2 + 1 );
 			this._setSegment( index, nextSeg, _vec, v );
-			this._setSegmentLife( index, nextSeg, prevLife + 1 );
+
+			const prevLife = creationMs.getX( index * segmentCount * 2 + prevSeg * 2 + 1 );
+			this._setSegmentLife( index, nextSeg, prevLife, window.performance.now() );
 
 		}
 
 		this.nextSegment[ index ] = ( this.nextSegment[ index ] + 1 ) % this.segmentCount;
 		position.needsUpdate = true;
-		lifeIndex.needsUpdate = true;
+		creationMs.needsUpdate = true;
 
 	}
 

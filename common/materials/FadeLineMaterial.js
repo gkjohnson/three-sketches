@@ -7,25 +7,33 @@ export class FadeLineMaterial extends MaterialBase {
 
 		super( {
 
+			defines: {
+				HARD_CUTOFF: 0,
+			},
+
 			uniforms: {
 
 				color: { value: new Color() },
 				opacity: { value: 1 },
-				currIndex: { value: 0 },
-				segmentCount: { value: 10 },
+				currentMs: { value: 0 },
+				fadeMs: { value: 10 },
 
 			},
 
 			vertexShader: /* glsl */`
 
-                attribute uint lifeIndex;
-                varying float vLifeIndex;
+				uniform uint currentMs;
+
+				attribute uint creationMs;
+
+                varying float relativeMs;
                 void main() {
 
                     vec4 mvPosition = vec4( position, 1.0 );
                     mvPosition = modelViewMatrix * mvPosition;
                     gl_Position = projectionMatrix * mvPosition;
-                    vLifeIndex = float( lifeIndex );
+
+                    relativeMs = - float( currentMs - creationMs );
 
                 }
 
@@ -33,18 +41,23 @@ export class FadeLineMaterial extends MaterialBase {
 
 			fragmentShader: /* glsl */`
 
+				uniform uint currentMs;
+
                 uniform vec3 color;
                 uniform float opacity;
-                uniform float currIndex;
-                uniform float segmentCount;
-                varying float vLifeIndex;
+                uniform float fadeMs;
+                varying float relativeMs;
 
                 void main() {
 
-                    float currValue = vLifeIndex - ( currIndex - segmentCount );
-
+                    float currValue = max( 0.0, relativeMs + fadeMs );
                     gl_FragColor.rgb = color;
-                    gl_FragColor.a = opacity * max( currValue / segmentCount, 0.0 );
+
+					#if HARD_CUTOFF
+					gl_FragColor.a = currValue <= 0.0 ? 0.0 : opacity;
+					#else
+                    gl_FragColor.a = opacity * currValue / fadeMs;
+					#endif
 
                     #include <encodings_fragment>
 

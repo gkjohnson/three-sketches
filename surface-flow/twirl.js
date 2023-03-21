@@ -54,8 +54,7 @@ const SPEED = 0.01 * 120;
 
 	const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
 	trails.material = new FadeLineMaterial( {
-		segmentCount: SEGMENTS_COUNT,
-		currIndex: 0,
+		fadeMs: 8333.0,
 	} );
 	trails.material.opacity = 0.5;
 	trails.material.transparent = true;
@@ -92,9 +91,6 @@ const SPEED = 0.01 * 120;
 	app.toggleLoading();
 	app.update = delta => {
 
-		controls.update();
-
-		trails.material.currIndex ++;
 		for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
 
 			const info = pointInfo[ i ];
@@ -142,6 +138,9 @@ const SPEED = 0.01 * 120;
 			}
 
 		}
+
+		controls.update();
+		trails.material.currentMs = window.performance.now();
 
 		renderer.autoClear = false;
 		renderer.clear();
