@@ -8,6 +8,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { InstancedSpheres } from '../common/objects/InstancedSphere.js';
 import { InstancedTrails } from '../common/objects/InstancedTrails.js';
 import { FadeLineMaterial } from '../common/materials/FadeLineMaterial.js';
+import { drawTrails } from './src/drawTrails.js';
 
 const POINT_COUNT = 100;
 const SEGMENTS_COUNT = 2000;
@@ -32,20 +33,14 @@ const SPEED = 0.005 * 120;
 	mesh.geometry.scale( 0.005, 0.005, 0.005 );
 	mesh.geometry.rotateX( - Math.PI / 2 );
 	mesh.geometry.center();
-	scene.add( mesh );
 
 	mesh.material = new MeshBasicMaterial();
 	mesh.material.transparent = true;
 	mesh.material.color.set( 0x111111 ).convertSRGBToLinear();
 	mesh.material.opacity = 0.5;
-	mesh.material.depthWrite = false;
 	mesh.material.polygonOffset = true;
-	mesh.material.polygonOffsetUnits = 1;
-	mesh.material.polygonOffsetFactor = 1;
-	mesh.renderOrder = 1;
-
-	const container = new Group();
-	scene.add( container );
+	mesh.material.polygonOffsetUnits = 2;
+	mesh.material.polygonOffsetFactor = 2;
 
 	const surf = new SurfaceWalker( mesh.geometry );
 
@@ -61,10 +56,9 @@ const SPEED = 0.005 * 120;
 	const spheres = new InstancedSpheres( new MeshBasicMaterial(), POINT_COUNT );
 
 	const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
-	container.add( trails );
-	// trails.material.color.set( 0xffffff ).multiplyScalar( 0.5 ).convertSRGBToLinear();
 	trails.material.opacity = 0.35;
 	trails.material.transparent = true;
+	trails.depthWrite = false;
 
 	const pointInfo = [];
 	for ( let i = 0; i < POINT_COUNT; i ++ ) {
@@ -100,6 +94,10 @@ const SPEED = 0.005 * 120;
 			trails.pushPoint( i, temp );
 
 		}
+
+		renderer.autoClear = false;
+		renderer.clear();
+		drawTrails( renderer, camera, mesh, trails );
 
 	};
 
