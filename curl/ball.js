@@ -7,7 +7,7 @@ import { CurlGenerator } from './src/CurlGenerator.js';
 import { FadeLineMaterial } from '../surface-flow/src/FadeLineMaterial.js';
 
 const POINT_COUNT = 1000;
-const SEGMENTS_COUNT = 500;
+const SEGMENTS_COUNT = 10000;
 const SPEED = 0.005;
 
 function randomSampleSphere() {
@@ -22,7 +22,7 @@ function randomSampleSphere() {
 
 	} while ( v.length() > 0.5 );
 
-	return v.multiplyScalar( 10 );
+	return v.multiplyScalar( 2.0 );
 
 }
 
@@ -47,7 +47,7 @@ function randomSampleSphere() {
 		currIndex: 0,
 	} );
 	trails.material.transparent = true;
-	trails.material.opacity = 0.25;
+	trails.material.opacity = 0.15;
 	trails.material.depthWrite = false;
 	scene.add( trails );
 
@@ -91,13 +91,14 @@ function randomSampleSphere() {
 
 			const dir = 0.01 * ( i % 2 == 0 ? 1 : - 1 );
 
-			const c = curl.sample2( ...info );
+			const c = curl.sample3d( info.x, info.y, info.z );
+			c.normalize()
 			info.addScaledVector( c, dir );
-			spheres.setPosition( i, info, 0.01 );
+			spheres.setPosition( i, info, 0.0000000000001 );
 			trails.pushPoint( i, info );
 
 
-			if ( Math.random() < 0.01 ) {
+			if ( Math.random() < 0.01 || info.length() > 1.0 ) {
 
 				info.copy( randomSampleSphere() );
 				trails.pushPoint( i, info, true )

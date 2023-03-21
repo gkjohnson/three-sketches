@@ -1,8 +1,11 @@
-import { Vector3 } from 'three';
-import noise from '../../lib/perlin.js';
-import { createNoise3D } from 'simplex-noise';
+import { Vector2, Vector3 } from 'three';
+// import noise from '../../lib/perlin.js';
+import { Noise } from '../../lib/perlinNoise.js';
 
-const noise3D = createNoise3D( Math.random );
+const noise = new Noise();
+const noise2 = new Noise();
+noise.seed( ~ ~ ( Math.random() * 1000 ) );
+noise2.seed( ~ ~ ( Math.random() * 1000 ) );
 
 const offset = 0.0;
 function fbm( x, y, z ) {
@@ -13,7 +16,7 @@ function fbm( x, y, z ) {
 	let amplitude = 1.0;
 	for ( let i = 0; i < 1; i ++ ) {
 
-	  n += amplitude * noise3D( x * l, y * l, z * l );
+	  n += amplitude * noise2.simplex3( x * l, y * l, z * l );
 	  totalWeight += amplitude;
 	  amplitude *= 0.5;
 	  l *= 2.0;
@@ -25,25 +28,21 @@ function fbm( x, y, z ) {
 
 }
 
-
-
 //Find the curl of the noise field based on on the noise value at the location of a particle
-function computeCurl2( x, y, z ) {
+function computeCurl3( x, y, z, curl ) {
 
 	const eps = 0.0001;
 
 	x += 1000.0 * offset;
 	y -= 1000.0 * offset;
 
-	const curl = new Vector3();
-
 	//Find rate of change in YZ plane
-	var n1 = fbm( x, y + eps, z );
-	var n2 = fbm( x, y - eps, z );
+	let n1 = fbm( x, y + eps, z );
+	let n2 = fbm( x, y - eps, z );
 	//Average to find approximate derivative
 	let a = ( n1 - n2 ) / ( 2 * eps );
-	var n1 = fbm( x, y, z + eps );
-	var n2 = fbm( x, y, z - eps );
+	n1 = fbm( x, y, z + eps );
+	n2 = fbm( x, y, z - eps );
 	//Average to find approximate derivative
 	let b = ( n1 - n2 ) / ( 2 * eps );
 	curl.x = a - b;
@@ -74,6 +73,30 @@ function computeCurl2( x, y, z ) {
 
 }
 
+function computeCurl2( x, y, target ) {
+
+	const eps = 0.0001;
+
+	//Find rate of change in X direction
+	let n1 = noise.simplex2( x + eps, y );
+	let n2 = noise.simplex2( x - eps, y );
+
+	//Average to find approximate derivative
+	const a = ( n1 - n2 ) / ( 2 * eps );
+
+	//Find rate of change in Y direction
+	n1 = noise.simplex2( x, y + eps );
+	n2 = noise.simplex2( x, y - eps );
+
+	//Average to find approximate derivative
+	const b = ( n1 - n2 ) / ( 2 * eps );
+
+	//Curl
+	target.x = b;
+	target.y = - a;
+	return target;
+
+}
 
 
 // https://al-ro.github.io/projects/embers/
@@ -81,54 +104,22 @@ export class CurlGenerator {
 
 	constructor() {
 
-		this.scale = 0.25;
+		this.scale = 1;
 
 	}
 
-	sample2( ...args ) {
+	sample3d( x, y, z, target = new Vector3() ) {
 
-		args[ 0 ] /= this.scale;
-		args[ 1 ] /= this.scale;
-		args[ 2 ] /= this.scale;
-		return computeCurl2( ...args );
+		const s = this.scale;
+		computeCurl3( x / s, y / s, z / s, target );
+		return target;
 
 	}
 
-	sample( x, y, z, target = new Vector3() ) {
+	sample2d( x, y, target = new Vector2() ) {
 
-		var eps = 0.0001;
-
-		// Find rate of change in YZ plane
-		var n1 = noise3D( x, y + eps, z );
-		var n2 = noise3D( x, y - eps, z );
-
-		// Average to find approximate derivative
-		var a = ( n1 - n2 ) / ( 2 * eps );
-		var n1 = noise3D( x, y, z + eps );
-		var n2 = noise3D( x, y, z - eps );
-
-		// Average to find approximate derivative
-		var b = ( n1 - n2 ) / ( 2 * eps );
-		target.x = a - b;
-
-		// Find rate of change in XZ plane
-		n1 = noise3D( x, y, z + eps );
-		n2 = noise3D( x, y, z - eps );
-		a = ( n1 - n2 ) / ( 2 * eps );
-		n1 = noise3D( x + eps, y, z );
-		n2 = noise3D( x - eps, y, z );
-		b = ( n1 - n2 ) / ( 2 * eps );
-		target.y = a - b;
-
-		// Find rate of change in XY plane
-		n1 = noise3D( x + eps, y, z );
-		n2 = noise3D( x - eps, y, z );
-		a = ( n1 - n2 ) / ( 2 * eps );
-		n1 = noise3D( x, y + eps, z );
-		n2 = noise3D( x, y - eps, z );
-		b = ( n1 - n2 ) / ( 2 * eps );
-		target.z = a - b;
-
+		const s = this.scale;
+		computeCurl2( x / s, y / s, target );
 		return target;
 
 	}
