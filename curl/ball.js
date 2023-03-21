@@ -44,7 +44,7 @@ function randomSampleSphere() {
 		fadeMs: 8333.0
 	} );
 	trails.material.transparent = true;
-	trails.material.opacity = 0.5;
+	trails.material.opacity = 0.15;
 	trails.material.depthWrite = false;
 	scene.add( trails );
 
@@ -59,12 +59,10 @@ function randomSampleSphere() {
 
 	const generator = new CurlGenerator();
 
-	app.toggleLoading();
-	app.update = () => {
+	const result = new Vector3();
+	for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
 
-
-		const result = new Vector3();
-		for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
+		for ( let j = 0; j < SEGMENTS_COUNT; j ++ ) {
 
 			const point = pointInfo[ i ];
 			const dir = i % 2 == 0 ? 1 : - 1;
@@ -73,7 +71,7 @@ function randomSampleSphere() {
 			point.addScaledVector( result.normalize(), SPEED * dir );
 			trails.pushPoint( i, point );
 
-			if ( Math.random() < 0.01 || point.length() > 1.0 ) {
+			if ( point.length() > 1.0 ) {
 
 				point.copy( randomSampleSphere() );
 				trails.pushPoint( i, point, true );
@@ -82,8 +80,14 @@ function randomSampleSphere() {
 
 		}
 
+	}
+
+	trails.material.currentMs = window.performance.now();
+
+	app.toggleLoading();
+	app.update = () => {
+
 		controls.update();
-		trails.material.currentMs = window.performance.now();
 
 	};
 
