@@ -1,6 +1,6 @@
 import { App } from '../common/App.js';
 import { SurfaceWalker, SurfacePoint, TriangleFrame } from './src/SurfaceWalker.js';
-import { Group, MeshBasicMaterial, Vector3 } from 'three';
+import { MeshBasicMaterial, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';

@@ -11,7 +11,7 @@ export class FadeLineMaterial extends MaterialBase {
 
 				color: { value: new Color() },
 				opacity: { value: 1 },
-				currIndex: { value: 10 },
+				currIndex: { value: 0 },
 				segmentCount: { value: 10 },
 
 			},
