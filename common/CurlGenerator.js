@@ -1,11 +1,9 @@
 import { Vector2, Vector3 } from 'three';
-// import noise from '../../lib/perlin.js';
-import { Noise } from '../../lib/perlinNoise.js';
+import { Noise } from '../lib/perlin.module.js';
 
-const noise = new Noise();
-const noise2 = new Noise();
-noise.seed( ~ ~ ( Math.random() * 1000 ) );
-noise2.seed( ~ ~ ( Math.random() * 1000 ) );
+// https://al-ro.github.io/projects/embers/
+let noise;
+let noise2;
 
 const offset = 0.0;
 function fbm( x, y, z ) {
@@ -98,19 +96,27 @@ function computeCurl2( x, y, target ) {
 
 }
 
-
-// https://al-ro.github.io/projects/embers/
 export class CurlGenerator {
 
 	constructor() {
 
 		this.scale = 1;
+		this.offset = new Vector3();
+		this.noise = new Noise( ~ ~ ( Math.random() * 1000 ) );
+		this.noise2 = new Noise( ~ ~ ( Math.random() * 1000 ) );
 
 	}
 
 	sample3d( x, y, z, target = new Vector3() ) {
 
+		noise = this.noise;
+		noise2 = this.noise2;
+
 		const s = this.scale;
+		const o = this.offset;
+		x += o.x;
+		y += o.y;
+		z += o.z;
 		computeCurl3( x / s, y / s, z / s, target );
 		return target;
 
@@ -118,7 +124,13 @@ export class CurlGenerator {
 
 	sample2d( x, y, target = new Vector2() ) {
 
+		noise = this.noise;
+		noise2 = this.noise2;
+
 		const s = this.scale;
+		const o = this.offset;
+		x += o.x;
+		y += o.y;
 		computeCurl2( x / s, y / s, target );
 		return target;
 

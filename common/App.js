@@ -36,6 +36,7 @@ export class App {
 		this.renderer = renderer;
 		this.update = null;
 		this.loadingElement = null;
+		this._fadeTimeout = - 1;
 
 	}
 
@@ -59,7 +60,7 @@ export class App {
 		loadingElement.style.fontSize = '1em';
 		loadingElement.style.transition = 'opacity 0.1s ease';
 		loadingElement.style.opacity = '0';
-		setTimeout( () => {
+		this._fadeTimeout = setTimeout( () => {
 
 			loadingElement.style.opacity = '0.5';
 
@@ -83,6 +84,7 @@ export class App {
 	toggleLoading() {
 
 		this.loadingElement.style.opacity = '0';
+		clearTimeout( this._fadeTimeout );
 
 	}
 
