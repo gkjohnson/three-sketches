@@ -1,5 +1,5 @@
 import { Color } from 'three';
-import { MaterialBase } from '../../common/MaterialBase.js';
+import { MaterialBase } from '../MaterialBase.js';
 
 export class FadeLineMaterial extends MaterialBase {
 

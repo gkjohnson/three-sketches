@@ -5,8 +5,9 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
-import { InstancedSpheres } from './src/InstancedSphere.js';
-import { InstancedTrails } from './src/InstancedTrails.js';
+import { InstancedSpheres } from '../common/objects/InstancedSphere.js';
+import { InstancedTrails } from '../common/objects/InstancedTrails.js';
+import { FadeLineMaterial } from '../common/materials/FadeLineMaterial.js';
 
 const POINT_COUNT = 100;
 const SEGMENTS_COUNT = 2000;

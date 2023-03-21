@@ -1,9 +1,9 @@
 import { App } from '../common/App.js';
 import { Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-import { InstancedTrails } from '../surface-flow/src/InstancedTrails.js';
+import { InstancedTrails } from '../common/objects/InstancedTrails.js';
 import { CurlGenerator } from '../common/CurlGenerator.js';
-import { FadeLineMaterial } from '../surface-flow/src/FadeLineMaterial.js';
+import { FadeLineMaterial } from '../common/materials/FadeLineMaterial.js';
 
 const POINT_COUNT = 1000;
 const SEGMENTS_COUNT = 1000;
