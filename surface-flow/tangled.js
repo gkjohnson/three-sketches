@@ -8,6 +8,7 @@ import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { InstancedSpheres } from '../common/objects/InstancedSphere.js';
 import { InstancedTrails } from '../common/objects/InstancedTrails.js';
 import { drawTrails } from './src/drawTrails.js';
+import { FadeLineMaterial } from '../common/materials/FadeLineMaterial.js';
 
 const POINT_COUNT = 100;
 const SEGMENTS_COUNT = 2000;
@@ -55,6 +56,10 @@ const SPEED = 0.005 * 120;
 	const spheres = new InstancedSpheres( new MeshBasicMaterial(), POINT_COUNT );
 
 	const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
+	trails.material = new FadeLineMaterial( {
+		fadeMs: 20000,
+	} );
+	trails.material.setDefine( 'HARD_CUTOFF', 1 );
 	trails.material.opacity = 0.35;
 	trails.material.transparent = true;
 	trails.depthWrite = false;
@@ -93,6 +98,8 @@ const SPEED = 0.005 * 120;
 			trails.pushPoint( i, temp );
 
 		}
+
+		trails.material.currentMs = window.performance.now();
 
 		renderer.autoClear = false;
 		renderer.clear();
