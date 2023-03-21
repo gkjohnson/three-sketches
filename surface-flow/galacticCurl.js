@@ -1,6 +1,6 @@
 import { App } from '../common/App.js';
 import { SurfaceWalker, SurfacePoint } from './src/SurfaceWalker.js';
-import { Group, Mesh, MeshBasicMaterial, SphereGeometry, TorusKnotGeometry, Vector3 } from 'three';
+import { MeshBasicMaterial, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -20,7 +20,7 @@ const SPEED = 0.005 * 120;
 	app.init( document.body );
 
 	const { camera, scene, renderer } = app;
-	camera.position.set( 4, 3, - 7 );
+	camera.position.set( 6, 5, 10 );
 	camera.lookAt( 0, 0, 0 );
 	renderer.setClearColor( 0x111111 );
 
