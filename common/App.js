@@ -48,6 +48,10 @@ export class App {
 		window.addEventListener( 'resize', onResize );
 		onResize();
 
+		const { domElement } = renderer;
+		domElement.style.opacity = '0';
+		domElement.style.transition = 'opacity 0.5s ease';
+
 		const loadingElement = document.createElement( 'div' );
 		loadingElement.innerText = 'Loading';
 		loadingElement.style.position = 'absolute';
@@ -58,7 +62,7 @@ export class App {
 		loadingElement.style.fontWeight = 'lighter';
 		loadingElement.style.padding = '20px';
 		loadingElement.style.fontSize = '1em';
-		loadingElement.style.transition = 'opacity 0.1s ease';
+		loadingElement.style.transition = 'opacity 0.5s ease';
 		loadingElement.style.opacity = '0';
 		this._fadeTimeout = setTimeout( () => {
 
@@ -83,7 +87,12 @@ export class App {
 
 	toggleLoading() {
 
-		this.loadingElement.style.opacity = '0';
+		setTimeout( () => {
+
+			this.renderer.domElement.style.opacity = '1';
+			this.loadingElement.style.opacity = '0';
+
+		} );
 		clearTimeout( this._fadeTimeout );
 
 	}
