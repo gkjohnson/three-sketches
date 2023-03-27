@@ -16,13 +16,15 @@ BufferGeometry.prototype.computeBoundsTree = computeBoundsTree;
 BufferGeometry.prototype.disposeBoundsTree = disposeBoundsTree;
 Mesh.prototype.raycast = acceleratedRaycast;
 
-const POINT_COUNT = 1000;
+const POINT_COUNT = 2000;
 const SEGMENTS_COUNT = 3000;
+const SPEED = 0.01 * 120;
+const LIFE = 5;
+
 ( async () => {
 
-	let speed = 0.00025 * 120;
-	let url = 'https://raw.githubusercontent.com/gkjohnson/3d-demo-data/main/models/threedscans/Crab.glb';
-	let scale = 0.05;
+	const url = 'https://raw.githubusercontent.com/gkjohnson/3d-demo-data/main/models/threedscans/Elbow_Crab.glb';
+	const scale = 0.05;
 
 	const app = new App();
 	app.init( document.body );
@@ -36,14 +38,14 @@ const SEGMENTS_COUNT = 3000;
 	controls.autoRotate = true;
 	controls.autoRotateSpeed = 0.1;
 
-	// const gltf = await new GLTFLoader().setMeshoptDecoder( MeshoptDecoder ).loadAsync( url );
-	// const mesh = gltf.scene.children[ 0 ];
-	const mesh = new Mesh( new TorusKnotGeometry( 1, 0.4, 128, 16 ) );
-	// mesh.geometry.computeBoundsTree();
-
+	const gltf = await new GLTFLoader().setMeshoptDecoder( MeshoptDecoder ).loadAsync( url );
+	const mesh = gltf.scene.children[ 0 ];
+	// const mesh = new Mesh( new TorusKnotGeometry( 1, 0.4, 128, 16 ) );
 	mesh.geometry.scale( scale, scale, scale );
 	mesh.geometry.rotateX( - Math.PI / 2 );
 	mesh.geometry.center();
+	mesh.geometry.computeBoundsTree();
+
 
 	mesh.material = new MeshBasicMaterial();
 	mesh.material.transparent = true;
@@ -68,14 +70,14 @@ const SEGMENTS_COUNT = 3000;
 
 	const trails = new InstancedTrails( POINT_COUNT, SEGMENTS_COUNT );
 	trails.material = new FadeLineMaterial( {
-		fadeMs: 3000.33,
+		fadeMs: 6000.33,
 	} );
 	trails.material.opacity = 0.5;
 	trails.material.transparent = true;
 	trails.depthWrite = false;
 
 	const curlGenerator = new CurlGenerator();
-	curlGenerator.scale = MathUtils.lerp( 0.05, 0.065, Math.random() );
+	curlGenerator.scale = MathUtils.lerp( 1, 1.1, Math.random() );
 
 	const pointInfo = [];
 	for ( let i = 0; i < POINT_COUNT; i ++ ) {
@@ -86,7 +88,7 @@ const SEGMENTS_COUNT = 3000;
 		trails.init( i, surfacePoint );
 
 		const localGenerator = new CurlGenerator();
-		localGenerator.scale = MathUtils.lerp( 0.01, 0.02, Math.random() );
+		localGenerator.scale = MathUtils.lerp( 1, 1.1, Math.random() );
 
 		const info = {
 			localGenerator,
@@ -119,7 +121,8 @@ const SEGMENTS_COUNT = 3000;
 		let dist = delta.length();
 		delta.normalize();
 
-		const STEP = 0.005;
+		// TODO: account for screen scale
+		const STEP = 0.001;
 		while ( dist > STEP ) {
 
 			prevMouse.addScaledVector( delta, STEP );
@@ -136,7 +139,7 @@ const SEGMENTS_COUNT = 3000;
 			if ( hit ) {
 
 				nextPoint = ( nextPoint + 1 ) % POINT_COUNT;
-				pointInfo[ nextPoint ].life = 1.5 + Math.random() * 0.5;
+				pointInfo[ nextPoint ].life = LIFE + Math.random() * 0.5;
 
 				const { surfacePoint } = pointInfo[ nextPoint ];
 				surfacePoint.copy( hit.point );
@@ -174,12 +177,12 @@ const SEGMENTS_COUNT = 3000;
 			const { surfacePoint, direction, localGenerator } = info;
 			info.life -= delta;
 			curlGenerator.sample3d( ...surfacePoint, temp );
-			localGenerator.sample3d( ...surfacePoint, temp );
+			// localGenerator.sample3d( ...surfacePoint, temp );
 
 			// temp.addScaledVector( temp2, 0.1 );
 
 			const dir = ( i % 2 === 0 ) ? - 1 : 1;
-			temp.normalize().multiplyScalar( speed * delta * dir );
+			temp.normalize().multiplyScalar( SPEED * delta * dir );
 			surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal );
 
 			temp.copy( surfacePoint );
