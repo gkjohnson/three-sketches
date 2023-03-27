@@ -50,8 +50,8 @@ const LIFE = 5;
 	mesh.material.color.set( 0x222222 ).convertSRGBToLinear();
 	mesh.material.opacity = 0.5;
 	mesh.material.polygonOffset = true;
-	mesh.material.polygonOffsetUnits = 5;
-	mesh.material.polygonOffsetFactor = 5;
+	mesh.material.polygonOffsetUnits = 10;
+	mesh.material.polygonOffsetFactor = 10;
 
 	const surf = new SurfaceWalker( mesh.geometry );
 
