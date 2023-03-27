@@ -50,8 +50,8 @@ const LIFE = 5;
 	mesh.material.color.set( 0x222222 ).convertSRGBToLinear();
 	mesh.material.opacity = 0.5;
 	mesh.material.polygonOffset = true;
-	mesh.material.polygonOffsetUnits = 10;
-	mesh.material.polygonOffsetFactor = 10;
+	mesh.material.polygonOffsetUnits = 1;
+	mesh.material.polygonOffsetFactor = 1;
 
 	const surf = new SurfaceWalker( mesh.geometry );
 
@@ -222,7 +222,11 @@ const LIFE = 5;
 
 			const dir = ( i % 2 === 0 ) ? - 1 : 1;
 			temp.normalize().multiplyScalar( SPEED * delta * dir );
-			surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal );
+			surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal, hit => {
+
+				trails.pushPoint( i, hit );
+
+			} );
 
 			temp.copy( surfacePoint );
 			spheres.setPosition( i, temp, 0.01 );

@@ -157,7 +157,7 @@ export class SurfaceWalker {
 
 	}
 
-	movePoint( p, dir, targetPoint, targetDir, targetNormal ) {
+	movePoint( p, dir, targetPoint, targetDir, targetNormal = null, edgeHitCallback = null ) {
 
 		const { halfEdgeMap } = this;
 
@@ -208,6 +208,12 @@ export class SurfaceWalker {
 				}
 
 				_frame0.copy( _frame1 );
+
+				if ( edgeHitCallback ) {
+
+					edgeHitCallback( _ray.origin );
+
+				}
 
 			} else {
 

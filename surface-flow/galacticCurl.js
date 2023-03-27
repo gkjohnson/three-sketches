@@ -107,7 +107,11 @@ const SEGMENTS_COUNT = 3000;
 
 			const dir = ( i % 2 === 0 ) ? - 1 : 1;
 			temp.normalize().multiplyScalar( speed * delta * dir );
-			surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal );
+			surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal, p => {
+
+				trails.pushPoint( i, p );
+
+			} );
 
 			temp.copy( surfacePoint );
 			spheres.setPosition( i, temp, 0.01 );
@@ -115,7 +119,7 @@ const SEGMENTS_COUNT = 3000;
 
 			curlGenerator.sample3d( ...surfacePoint, temp );
 
-			if ( Math.random() < 0.0025 || Math.abs( temp.normalize().dot( normal ) ) > 1 - 1e-1 * Math.random() ) {
+			if ( Math.random() < 0.01 || Math.abs( temp.normalize().dot( normal ) ) > 1 - 1e-1 * Math.random() ) {
 
 				surfacePoint.index = sampler.sampleWeightedFaceIndex();
 				sampler.sampleFace( surfacePoint.index, surfacePoint );
