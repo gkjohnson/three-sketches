@@ -11,3 +11,5 @@ Experiments with enabling a point to walk along a mesh surface using a half-edge
 [Galactic Crab](https://gkjohnson.github.io/three-sketches/surface-flow/galacticCurl.html)
 
 [Galactic Hosmer](https://gkjohnson.github.io/three-sketches/surface-flow/galacticCurl.html#Hosmer)
+
+[Interactive Curl](https://gkjohnson.github.io/three-sketches/surface-flow/interactiveCurl.html)
