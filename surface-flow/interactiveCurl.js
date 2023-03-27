@@ -1,6 +1,6 @@
 import { App } from '../common/App.js';
 import { SurfaceWalker, SurfacePoint } from './src/SurfaceWalker.js';
-import { Mesh, MeshBasicMaterial, Raycaster, BufferGeometry, Vector2, Vector3, TorusKnotGeometry, MathUtils } from 'three';
+import { Mesh, MeshBasicMaterial, Raycaster, BufferGeometry, Vector2, Vector3, MathUtils } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -40,12 +40,10 @@ const LIFE = 5;
 
 	const gltf = await new GLTFLoader().setMeshoptDecoder( MeshoptDecoder ).loadAsync( url );
 	const mesh = gltf.scene.children[ 0 ];
-	// const mesh = new Mesh( new TorusKnotGeometry( 1, 0.4, 128, 16 ) );
 	mesh.geometry.scale( scale, scale, scale );
 	mesh.geometry.rotateX( - Math.PI / 2 );
 	mesh.geometry.center();
 	mesh.geometry.computeBoundsTree();
-
 
 	mesh.material = new MeshBasicMaterial();
 	mesh.material.transparent = true;
