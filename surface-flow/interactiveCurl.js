@@ -85,11 +85,7 @@ const LIFE = 5;
 		sampler.sampleFace( surfacePoint.index, surfacePoint );
 		trails.init( i, surfacePoint );
 
-		const localGenerator = new CurlGenerator();
-		localGenerator.scale = MathUtils.lerp( 1, 1.1, Math.random() );
-
 		const info = {
-			localGenerator,
 			surfacePoint,
 			direction: new Vector3( 0, 0, 1 ).randomDirection(),
 			life: 0,
@@ -103,11 +99,31 @@ const LIFE = 5;
 	const prevMouse = new Vector2();
 	const raycaster = new Raycaster();
 
+	function triggerTrail( x, y ) {
+
+		raycaster.setFromCamera( { x, y }, camera );
+
+		const hit = raycaster.intersectObject( mesh, true )[ 0 ];
+		if ( hit ) {
+
+			nextPoint = ( nextPoint + 1 ) % POINT_COUNT;
+			pointInfo[ nextPoint ].life = LIFE + Math.random() * 0.5;
+
+			const { surfacePoint } = pointInfo[ nextPoint ];
+			surfacePoint.copy( hit.point );
+			surfacePoint.index = hit.faceIndex;
+			trails.pushPoint( nextPoint, surfacePoint, true );
+
+
+		}
+
+	}
+
 	window.addEventListener( 'pointermove', e => {
 
 		const mouse = new Vector2();
-		mouse.x = ( event.clientX / window.innerWidth ) * 2 - 1;
-		mouse.y = - ( event.clientY / window.innerHeight ) * 2 + 1;
+		mouse.x = e.clientX;
+		mouse.y = e.clientY;
 		if ( ! initialized ) {
 
 			prevMouse.copy( mouse );
@@ -120,7 +136,7 @@ const LIFE = 5;
 		delta.normalize();
 
 		// TODO: account for screen scale
-		const STEP = 0.001;
+		const STEP = 0.5;
 		while ( dist > STEP ) {
 
 			prevMouse.addScaledVector( delta, STEP );
@@ -128,22 +144,57 @@ const LIFE = 5;
 
 			const offset = new Vector2( 1, 0 );
 			offset.rotateAround( new Vector2(), Math.random() * 2.0 * Math.PI );
-			offset.multiplyScalar( 0.025 );
+			offset.multiplyScalar( 5 );
 			offset.add( prevMouse );
-			raycaster.setFromCamera( offset, camera );
 
-			const hit = raycaster.intersectObject( mesh, true )[ 0 ];
+			offset.x = ( offset.x / window.innerWidth ) * 2 - 1;
+			offset.y = - ( offset.y / window.innerHeight ) * 2 + 1;
 
-			if ( hit ) {
+			triggerTrail( offset.x, offset.y );
 
-				nextPoint = ( nextPoint + 1 ) % POINT_COUNT;
-				pointInfo[ nextPoint ].life = LIFE + Math.random() * 0.5;
+		}
 
-				const { surfacePoint } = pointInfo[ nextPoint ];
-				surfacePoint.copy( hit.point );
-				surfacePoint.index = hit.faceIndex;
-				trails.pushPoint( nextPoint, surfacePoint, true );
+	} );
 
+	window.addEventListener( 'pointerdown', e => {
+
+		const mouse = new Vector2();
+		mouse.x = e.clientX;
+		mouse.y = e.clientY;
+
+		const MAX_RADIUS = 100;
+		const MAX_TIME = 500;
+		let time = 0;
+
+		let startTime = window.performance.now();
+
+		run();
+		function run() {
+
+			const delta = window.performance.now() - startTime;
+			const minInterp = Math.max( ( MAX_TIME - time ) / MAX_TIME, 0 );
+			const minValue = 1.0 - ( minInterp ** 2 );
+
+			const maxInterp = Math.max( ( MAX_TIME - time - delta ) / MAX_TIME, 0 );
+			const maxValue = 1.0 - ( maxInterp ** 2 );
+			for ( let i = 0; i < 100 * ( 1.0 - MathUtils.lerp( minValue, maxValue, Math.random() ) ); i ++ ) {
+
+				const offset = new Vector2( 1, 0 );
+				offset.rotateAround( new Vector2(), Math.random() * 2.0 * Math.PI );
+				offset.multiplyScalar( MAX_RADIUS * MathUtils.lerp( minValue, maxValue, Math.random() ) );
+				offset.add( mouse );
+				offset.x = ( offset.x / window.innerWidth ) * 2 - 1;
+				offset.y = - ( offset.y / window.innerHeight ) * 2 + 1;
+
+				triggerTrail( offset.x, offset.y );
+
+			}
+
+			time += delta;
+			startTime = window.performance.now();
+			if ( time < MAX_TIME ) {
+
+				requestAnimationFrame( run );
 
 			}
 
@@ -151,15 +202,8 @@ const LIFE = 5;
 
 	} );
 
-
-
-
-
-
-
 	const normal = new Vector3();
 	const temp = new Vector3();
-	const temp2 = new Vector3();
 	app.toggleLoading();
 	app.update = delta => {
 
@@ -172,12 +216,9 @@ const LIFE = 5;
 
 			}
 
-			const { surfacePoint, direction, localGenerator } = info;
+			const { surfacePoint, direction } = info;
 			info.life -= delta;
 			curlGenerator.sample3d( ...surfacePoint, temp );
-			// localGenerator.sample3d( ...surfacePoint, temp );
-
-			// temp.addScaledVector( temp2, 0.1 );
 
 			const dir = ( i % 2 === 0 ) ? - 1 : 1;
 			temp.normalize().multiplyScalar( SPEED * delta * dir );
