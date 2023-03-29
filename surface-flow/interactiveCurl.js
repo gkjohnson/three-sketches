@@ -71,6 +71,7 @@ const LIFE = 5;
 		fadeMs: 6000.33,
 	} );
 	trails.material.opacity = 0.5;
+	trails.material.depthWrite = false;
 	trails.material.transparent = true;
 	trails.depthWrite = false;
 
@@ -106,10 +107,20 @@ const LIFE = 5;
 		const hit = raycaster.intersectObject( mesh, true )[ 0 ];
 		if ( hit ) {
 
+			// first point for pos direction
 			nextPoint = ( nextPoint + 1 ) % POINT_COUNT;
 			pointInfo[ nextPoint ].life = LIFE + Math.random() * 0.5;
 
-			const { surfacePoint } = pointInfo[ nextPoint ];
+			let { surfacePoint } = pointInfo[ nextPoint ];
+			surfacePoint.copy( hit.point );
+			surfacePoint.index = hit.faceIndex;
+			trails.pushPoint( nextPoint, surfacePoint, true );
+
+			// second point for neg direction
+			nextPoint = ( nextPoint + 1 ) % POINT_COUNT;
+			pointInfo[ nextPoint ].life = LIFE + Math.random() * 0.5;
+
+			surfacePoint = pointInfo[ nextPoint ].surfacePoint;
 			surfacePoint.copy( hit.point );
 			surfacePoint.index = hit.faceIndex;
 			trails.pushPoint( nextPoint, surfacePoint, true );
@@ -135,8 +146,7 @@ const LIFE = 5;
 		let dist = delta.length();
 		delta.normalize();
 
-		// TODO: account for screen scale
-		const STEP = 0.5;
+		const STEP = 1;
 		while ( dist > STEP ) {
 
 			prevMouse.addScaledVector( delta, STEP );
@@ -164,6 +174,7 @@ const LIFE = 5;
 
 		const MAX_RADIUS = 100;
 		const MAX_TIME = 500;
+		const MAX_HITS = 50;
 		let time = 0;
 
 		let startTime = window.performance.now();
@@ -177,7 +188,7 @@ const LIFE = 5;
 
 			const maxInterp = Math.max( ( MAX_TIME - time - delta ) / MAX_TIME, 0 );
 			const maxValue = 1.0 - ( maxInterp ** 2 );
-			for ( let i = 0; i < 100 * ( 1.0 - MathUtils.lerp( minValue, maxValue, Math.random() ) ); i ++ ) {
+			for ( let i = 0; i < MAX_HITS * ( 1.0 - MathUtils.lerp( minValue, maxValue, Math.random() ) ); i ++ ) {
 
 				const offset = new Vector2( 1, 0 );
 				offset.rotateAround( new Vector2(), Math.random() * 2.0 * Math.PI );

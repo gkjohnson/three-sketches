@@ -82,7 +82,6 @@ function randomSampleSphere( v = new Vector3() ) {
 
 			}
 
-
 		}
 
 		trails.material.currentMs = window.performance.now();
