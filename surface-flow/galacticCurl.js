@@ -1,6 +1,6 @@
 import { App } from '../common/App.js';
 import { SurfaceWalker, SurfacePoint } from './src/SurfaceWalker.js';
-import { MeshBasicMaterial, Vector3 } from 'three';
+import { MathUtils, MeshBasicMaterial, Vector3 } from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -11,8 +11,10 @@ import { FadeLineMaterial } from '../common/materials/FadeLineMaterial.js';
 import { drawTrails } from './src/drawTrails.js';
 import { CurlGenerator } from '../common/CurlGenerator.js';
 
-const POINT_COUNT = 1000;
-const SEGMENTS_COUNT = 3000;
+const POINT_COUNT = 2000;
+const SEGMENTS_COUNT = 2000;
+const LIFE = 1500;
+const MAX_LIFE = 2000;
 ( async () => {
 
 	let speed = 0.005 * 120;
@@ -78,7 +80,7 @@ const SEGMENTS_COUNT = 3000;
 	trails.depthWrite = false;
 
 	const pointInfo = [];
-	for ( let i = 0; i < POINT_COUNT; i ++ ) {
+	for ( let i = 0; i < POINT_COUNT; i += 2 ) {
 
 		const surfacePoint = new SurfacePoint();
 		surfacePoint.index = sampler.sampleWeightedFaceIndex();
@@ -87,9 +89,21 @@ const SEGMENTS_COUNT = 3000;
 
 		const info = {
 			surfacePoint,
-			direction: new Vector3( 0, 0, 1 ).randomDirection(),
+			direction: new Vector3(),
+			life: MathUtils.lerp( LIFE, MAX_LIFE, Math.random() ),
 		};
 		pointInfo.push( info );
+
+		const surfacePoint2 = new SurfacePoint();
+		surfacePoint2.copy( surfacePoint );
+		surfacePoint2.index = surfacePoint.index;
+		trails.init( i + 1, surfacePoint2 );
+		const info2 = {
+			surfacePoint: surfacePoint2,
+			direction: new Vector3(),
+			life: info.life,
+		};
+		pointInfo.push( info2 );
 
 	}
 
@@ -99,32 +113,29 @@ const SEGMENTS_COUNT = 3000;
 	app.toggleLoading();
 	app.update = delta => {
 
-		for ( let i = 0, l = pointInfo.length; i < l; i ++ ) {
+		for ( let i = 0, l = pointInfo.length; i < l; i += 2 ) {
+
+			updatePoint( i, delta, 1 );
+			updatePoint( i + 1, delta, - 1 );
 
 			const info = pointInfo[ i ];
-			const { surfacePoint, direction } = info;
-			curlGenerator.sample3d( ...surfacePoint, temp );
+			info.life -= delta * 1000;
+			if ( info.life <= 0 ) {
 
-			const dir = ( i % 2 === 0 ) ? - 1 : 1;
-			temp.normalize().multiplyScalar( speed * delta * dir );
-			surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal, p => {
-
-				trails.pushPoint( i, p );
-
-			} );
-
-			temp.copy( surfacePoint );
-			spheres.setPosition( i, temp, 0.01 );
-			trails.pushPoint( i, temp );
-
-			curlGenerator.sample3d( ...surfacePoint, temp );
-
-			if ( Math.random() < 0.01 || Math.abs( temp.normalize().dot( normal ) ) > 1 - 1e-1 * Math.random() ) {
-
+				const surfacePoint = info.surfacePoint;
 				surfacePoint.index = sampler.sampleWeightedFaceIndex();
 				sampler.sampleFace( surfacePoint.index, surfacePoint );
 
+				const info2 = pointInfo[ i + 1 ];
+				const surfacePoint2 = info2.surfacePoint;
+				surfacePoint2.copy( surfacePoint );
+				surfacePoint2.index = surfacePoint.index;
+
 				trails.pushPoint( i, surfacePoint, true );
+				info.life = MathUtils.lerp( LIFE, MAX_LIFE, Math.random() );
+
+				trails.pushPoint( i + 1, surfacePoint2, true );
+				info2.life = info.life;
 
 			}
 
@@ -138,5 +149,24 @@ const SEGMENTS_COUNT = 3000;
 		drawTrails( renderer, camera, mesh, trails );
 
 	};
+
+	function updatePoint( i, delta, dir ) {
+
+		const info = pointInfo[ i ];
+		const { surfacePoint, direction } = info;
+		curlGenerator.sample3d( ...surfacePoint, temp );
+
+		temp.normalize().multiplyScalar( speed * delta * dir );
+		surf.movePoint( surfacePoint, temp, surfacePoint, direction, normal, p => {
+
+			trails.pushPoint( i, p );
+
+		} );
+
+		temp.copy( surfacePoint );
+		spheres.setPosition( i, temp, 0.01 );
+		trails.pushPoint( i, temp );
+
+	}
 
 } )();
