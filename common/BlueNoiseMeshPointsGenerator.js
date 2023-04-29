@@ -11,7 +11,7 @@ export class BlueNoiseMeshPointGenerator {
 
 	}
 
-	generate( count ) {
+	generate( sample_count ) {
 
 		const sampler = this.sampler;
 		if ( sampler.distribution === null ) {
@@ -20,44 +20,92 @@ export class BlueNoiseMeshPointGenerator {
 
 		}
 
-		const points = new Array( 4 * count );
-		for ( let i = 0, l = points.length; i < l; i ++ ) {
+		const points_list = new Array( 4 * sample_count );
+		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
-			points[ i ] = sampler.sample( new Vector3() );
+			points_list[ i ] = sampler.sample( new Vector3() );
 
 		}
 
-		//
-		const surfaceArea = sampler.distribution[ sampler.distribution.length - 1 ];
-		const alpha = 8;
-		const rmax = Math.sqrt( surfaceArea / ( ( 2 * count ) * Math.sqrt( 3 ) ) );
+		const mesh_surface_area = sampler.distribution[ sampler.distribution.length - 1 ];
 
-		const kdTree = new PointsBVH( points );
+		// def blue_noise_sample_elimination(point_list, mesh_surface_area, sample_count):
+		// alpha = 8
+		// rmax = numpy.sqrt(mesh_surface_area / ((2 * sample_count) * numpy.sqrt(3.)))
+		const alpha = 8;
+		const rmax = Math.sqrt( mesh_surface_area / ( ( 2 * sample_count ) * Math.sqrt( 3 ) ) );
+
+		const kdTree = new PointsBVH( points_list );
 
 		// # Compute the weight for each sample
 		// D = numpy.minimum(squareform(pdist(point_list)), 2 * rmax)
+		const D = squareform( pdist( points_list ) );
+		mapElements( D, el => Math.min( el, 2 * rmax ) );
+
 		// D = (1. - (D / (2 * rmax))) ** alpha
+		mapElements( D, el => 1.0 - ( el / ( 2 * rmax ) ) ** alpha );
 
 		// W = numpy.zeros(point_list.shape[0])
 		// for i in range(point_list.shape[0]):
 		// 	W[i] = sum(D[i, j] for j in kdtree.query_ball_point(point_list[i], 2 * rmax) if i != j)
+		const W = new Array( points_list.length );
+		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
+
+			const queryPoints = kdTree.queryBallPoint( points_list[ i ], 2 * rmax );
+			W[ i ] = 0;
+			for ( let j = 0, jl = queryPoints.length; j < jl; j ++ ) {
+
+				if ( j === i ) continue;
+				W[ i ] += D[ i ][ j ];
+
+			}
+
+		}
 
 		// # Pick the samples we need
 		// heap = sorted((w, i) for i, w in enumerate(W))
+		const heapSort = ( a, b ) => a[ 0 ] - b[ 0 ];
+		const heap = W.map( ( v, i ) => [ v, i ] ).sort( heapSort );
 
 		// id_set = set(range(point_list.shape[0]))
-		// while len(id_set) > sample_count:
-		// 	# Pick the sample with the highest weight
-		// 	w, i = heap.pop()
-		// 	id_set.remove(i)
+		const id_set = new Set( new Array( points_list.length ).fill().map( ( v, i ) => i ) );
 
-		// 	neighbor_set = set(kdtree.query_ball_point(point_list[i], 2 * rmax))
-		// 	neighbor_set.remove(i)
-		// 	heap = [(w - D[i, j], j) if j in neighbor_set else (w, j) for w, j in heap]
-		// 	heap.sort()
+		// while len(id_set) > sample_count:
+		while ( id_set.size > sample_count ) {
+
+			// 	# Pick the sample with the highest weight
+			// 	w, i = heap.pop()
+			// 	id_set.remove(i)
+			const [ , i ] = heap.pop();
+			id_set.delete( i );
+
+			// 	neighbor_set = set(kdtree.query_ball_point(point_list[i], 2 * rmax))
+			// 	neighbor_set.remove(i)
+			const neighbor_set = new Set( kdTree.query_ball_point( points_list[ i ], 2 * rmax ) );
+			neighbor_set.remove( i );
+
+			// 	heap = [(w - D[i, j], j) if j in neighbor_set else (w, j) for w, j in heap]
+			// 	heap.sort()
+			heap = heap.map( ( w, j ) => {
+
+				if ( neighbor_set.has( j ) ) {
+
+					return [ w - D[ i ][ j ], j ];
+
+				} else {
+
+					return [ w, j ];
+
+				}
+
+			} );
+			heap.sort( heapSort );
+
+		}
 
 		// # Job done
 		// return point_list[sorted(id_set)]
+		return Array.from( id_set ).map( id => points_list[ id ] );
 
 	}
 
@@ -81,11 +129,53 @@ function pdist( points ) {
 
 	}
 
+	return array;
+
 }
 
-function squareform( arr ) {
+function squareform( arr, count ) {
 
-	// TODO
+	const matrix = new Array( count );
+	for ( let i = 0; i < count; i ++ ) {
+
+		const row = new Array( count );
+		matrix[ i ] = row;
+		for ( let j = 0; j < count; j ++ ) {
+
+			if ( i === j ) {
+
+				row[ j ] = 0;
+
+			} else {
+
+				const m = count;
+				const index = m * i + j - ( ( i + 2 ) * ( i + 1 ) );
+				row[ j ] = arr[ index ];
+
+			}
+
+		}
+
+	}
+
+	return matrix;
+
+}
+
+function mapElements( matrix, cb ) {
+
+	for ( let i = 0, l = matrix.length; i < l; i ++ ) {
+
+		const row = matrix[ i ];
+		for ( let j = 0, lj = row.length; j < lj; j ++ ) {
+
+			row[ j ] = cb( row[ j ] );
+
+		}
+
+	}
+
+	return mapElements;
 
 }
 
