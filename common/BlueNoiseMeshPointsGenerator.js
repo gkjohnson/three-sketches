@@ -8,26 +8,38 @@ export class BlueNoiseMeshPointGenerator {
 	constructor( mesh ) {
 
 		this.sampler = new MeshSurfaceSampler( mesh );
+		this.sampleCount = 1024;
+		this.optionsMultiplier = 4;
+		this.surfaceArea = - 1;
 
 	}
 
-	generate( sample_count ) {
+	build() {
 
-		const sampler = this.sampler;
+		const { sampler } = this;
+		sampler.build();
+
+		this.surfaceArea = sampler.distribution[ sampler.distribution.length - 1 ];
+
+	}
+
+	generate() {
+
+		const { sampler, optionsMultiplier } = this.sampler;
 		if ( sampler.distribution === null ) {
 
-			sampler.build();
+			this.build();
 
 		}
 
-		const points_list = new Array( 4 * sample_count );
+		const sample_count = this.sampleCount;
+		const mesh_surface_area = this.surfaceArea;
+		const points_list = new Array( optionsMultiplier * sample_count );
 		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
 			points_list[ i ] = sampler.sample( new Vector3() );
 
 		}
-
-		const mesh_surface_area = sampler.distribution[ sampler.distribution.length - 1 ];
 
 		// def blue_noise_sample_elimination(point_list, mesh_surface_area, sample_count):
 		// alpha = 8
@@ -35,6 +47,8 @@ export class BlueNoiseMeshPointGenerator {
 		const alpha = 8;
 		const rmax = Math.sqrt( mesh_surface_area / ( ( 2 * sample_count ) * Math.sqrt( 3 ) ) );
 
+		// # Compute a KD-tree of the input point list
+		// kdtree = KDTree(point_list)
 		const kdTree = new PointsBVH( points_list );
 
 		// # Compute the weight for each sample
@@ -174,8 +188,6 @@ function mapElements( matrix, cb ) {
 		}
 
 	}
-
-	return mapElements;
 
 }
 
