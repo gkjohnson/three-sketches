@@ -1,14 +1,14 @@
-import { Vector3, BufferGeometry, Box3 } from 'three';
+import { Vector3, BufferGeometry, Box3, BufferAttribute } from 'three';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { MeshBVH } from 'three-mesh-bvh';
 
 // https://github.com/marmakoide/mesh-blue-noise-sampling/blob/949fadb51f3e78c5cfa1c3297c0bb81abea35442/mesh-sampling.py
-export class BlueNoiseMeshPointGenerator {
+export class BlueNoiseMeshPointsGenerator {
 
 	constructor( mesh ) {
 
 		this.sampler = new MeshSurfaceSampler( mesh );
-		this.sampleCount = 1024;
+		this.sampleCount = 1000;
 		this.optionsMultiplier = 4;
 		this.surfaceArea = - 1;
 
@@ -25,7 +25,7 @@ export class BlueNoiseMeshPointGenerator {
 
 	generate() {
 
-		const { sampler, optionsMultiplier } = this.sampler;
+		const { sampler, optionsMultiplier } = this;
 		if ( sampler.distribution === null ) {
 
 			this.build();
@@ -37,7 +37,9 @@ export class BlueNoiseMeshPointGenerator {
 		const points_list = new Array( optionsMultiplier * sample_count );
 		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
-			points_list[ i ] = sampler.sample( new Vector3() );
+			const v = new Vector3();
+			sampler.sample( v );
+			points_list[ i ] = v;
 
 		}
 
@@ -53,7 +55,7 @@ export class BlueNoiseMeshPointGenerator {
 
 		// # Compute the weight for each sample
 		// D = numpy.minimum(squareform(pdist(point_list)), 2 * rmax)
-		const D = squareform( pdist( points_list ) );
+		const D = squareform( pdist( points_list ), points_list.length );
 		mapElements( D, el => Math.min( el, 2 * rmax ) );
 
 		// D = (1. - (D / (2 * rmax))) ** alpha
@@ -65,7 +67,7 @@ export class BlueNoiseMeshPointGenerator {
 		const W = new Array( points_list.length );
 		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
-			const queryPoints = kdTree.queryBallPoint( points_list[ i ], 2 * rmax );
+			const queryPoints = kdTree.query_ball_point( points_list[ i ], 2 * rmax );
 			W[ i ] = 0;
 			for ( let j = 0, jl = queryPoints.length; j < jl; j ++ ) {
 
@@ -79,7 +81,7 @@ export class BlueNoiseMeshPointGenerator {
 		// # Pick the samples we need
 		// heap = sorted((w, i) for i, w in enumerate(W))
 		const heapSort = ( a, b ) => a[ 0 ] - b[ 0 ];
-		const heap = W.map( ( v, i ) => [ v, i ] ).sort( heapSort );
+		let heap = W.map( ( v, i ) => [ v, i ] ).sort( heapSort );
 
 		// id_set = set(range(point_list.shape[0]))
 		const id_set = new Set( new Array( points_list.length ).fill().map( ( v, i ) => i ) );
@@ -96,11 +98,11 @@ export class BlueNoiseMeshPointGenerator {
 			// 	neighbor_set = set(kdtree.query_ball_point(point_list[i], 2 * rmax))
 			// 	neighbor_set.remove(i)
 			const neighbor_set = new Set( kdTree.query_ball_point( points_list[ i ], 2 * rmax ) );
-			neighbor_set.remove( i );
+			neighbor_set.delete( i );
 
 			// 	heap = [(w - D[i, j], j) if j in neighbor_set else (w, j) for w, j in heap]
 			// 	heap.sort()
-			heap = heap.map( ( w, j ) => {
+			heap = heap.map( ( [ w, j ] ) => {
 
 				if ( neighbor_set.has( j ) ) {
 
@@ -131,13 +133,15 @@ function pdist( points ) {
 
 	const l = points.length;
 	const array = new Float32Array( l * ( l - 1 ) / 2 );
+	let index = 0;
 	for ( let i = 0; i < l; i ++ ) {
 
 		const v1 = points[ i ];
 		for ( let j = i + 1; j < l; j ++ ) {
 
 			const v2 = points[ j ];
-			array.push( v1.distanceTo( v2 ) );
+			array[ index ] = v1.distanceTo( v2 );
+			index ++;
 
 		}
 
@@ -206,7 +210,7 @@ function generatePointsProxyGeometry( points ) {
 
 	}
 
-	geometry.setIndex( index );
+	geometry.setIndex( new BufferAttribute( index, 1 ) );
 	return geometry;
 
 }
@@ -220,7 +224,7 @@ export class PointsBVH extends MeshBVH {
 
 	}
 
-	queryBallPoint( point, dist ) {
+	query_ball_point( point, dist ) {
 
 		const results = [];
 		const distSq = dist * dist;
@@ -231,7 +235,7 @@ export class PointsBVH extends MeshBVH {
 				intersectsBounds: box => {
 
 					const d2 = _temp.copy( point ).clamp( box.min, box.max );
-					return d2 < distSq;
+					return point.distanceToSquared( d2 ) < distSq;
 
 				},
 
