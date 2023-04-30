@@ -8,7 +8,7 @@ export class BlueNoiseMeshPointsGenerator {
 	constructor( mesh ) {
 
 		this.sampler = new MeshSurfaceSampler( mesh );
-		this.sampleCount = 1000;
+		this.sampleCount = 100;
 		this.optionsMultiplier = 4;
 		this.surfaceArea = - 1;
 
@@ -59,17 +59,16 @@ export class BlueNoiseMeshPointsGenerator {
 		mapElements( D, el => Math.min( el, 2 * rmax ) );
 
 		// D = (1. - (D / (2 * rmax))) ** alpha
-		mapElements( D, el => 1.0 - ( el / ( 2 * rmax ) ) ** alpha );
+		mapElements( D, el => ( 1.0 - ( el / ( 2 * rmax ) ) ) ** alpha );
 
 		// W = numpy.zeros(point_list.shape[0])
 		// for i in range(point_list.shape[0]):
 		// 	W[i] = sum(D[i, j] for j in kdtree.query_ball_point(point_list[i], 2 * rmax) if i != j)
-		const W = new Array( points_list.length );
+		const W = new Array( points_list.length ).fill( 0 );
 		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
-			const queryPoints = kdTree.query_ball_point( points_list[ i ], 2 * rmax );
-			W[ i ] = 0;
-			for ( let j = 0, jl = queryPoints.length; j < jl; j ++ ) {
+			const neighbors = kdTree.query_ball_point( points_list[ i ], 2 * rmax );
+			for ( let j = 0, jl = neighbors.length; j < jl; j ++ ) {
 
 				if ( j === i ) continue;
 				W[ i ] += D[ i ][ j ];
@@ -156,7 +155,7 @@ function squareform( arr, count ) {
 	const matrix = new Array( count );
 	for ( let i = 0; i < count; i ++ ) {
 
-		const row = new Array( count );
+		const row = new Float32Array( count );
 		matrix[ i ] = row;
 		for ( let j = 0; j < count; j ++ ) {
 
@@ -167,7 +166,11 @@ function squareform( arr, count ) {
 			} else {
 
 				const m = count;
-				const index = m * i + j - ( ( i + 2 ) * ( i + 1 ) );
+
+				const i2 = Math.min( i, j );
+				const j2 = Math.max( i, j );
+
+				const index = m * i2 + j2 - Math.floor( ( i2 + 2 ) * ( i2 + 1 ) / 2 );
 				row[ j ] = arr[ index ];
 
 			}
@@ -228,14 +231,16 @@ export class PointsBVH extends MeshBVH {
 
 		const results = [];
 		const distSq = dist * dist;
+		const geometry = this.geometry;
+		const index = geometry.index;
 		this.shapecast(
 
 			{
 
 				intersectsBounds: box => {
 
-					const d2 = _temp.copy( point ).clamp( box.min, box.max );
-					return point.distanceToSquared( d2 ) < distSq;
+					const closestPoint = _temp.copy( point ).clamp( box.min, box.max );
+					return point.distanceToSquared( closestPoint ) < distSq;
 
 				},
 
@@ -243,7 +248,7 @@ export class PointsBVH extends MeshBVH {
 
 					if ( tri.a.distanceToSquared( point ) < distSq ) {
 
-						results.push( triIndex );
+						results.push( index.getX( 3 * triIndex ) );
 
 					}
 
