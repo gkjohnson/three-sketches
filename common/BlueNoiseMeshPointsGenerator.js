@@ -8,9 +8,15 @@ export class BlueNoiseMeshPointsGenerator {
 	constructor( mesh ) {
 
 		this.sampler = new MeshSurfaceSampler( mesh );
-		this.sampleCount = 100;
+		this.sampleCount = 1000;
 		this.optionsMultiplier = 4;
 		this.surfaceArea = - 1;
+
+	}
+
+	getTargetDistance() {
+
+		return Math.sqrt( this.surfaceArea / ( ( 2 * this.sampleCount ) * Math.sqrt( 3 ) ) );
 
 	}
 
@@ -33,7 +39,6 @@ export class BlueNoiseMeshPointsGenerator {
 		}
 
 		const sample_count = this.sampleCount;
-		const mesh_surface_area = this.surfaceArea;
 		const points_list = new Array( optionsMultiplier * sample_count );
 		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
@@ -47,7 +52,7 @@ export class BlueNoiseMeshPointsGenerator {
 		// alpha = 8
 		// rmax = numpy.sqrt(mesh_surface_area / ((2 * sample_count) * numpy.sqrt(3.)))
 		const alpha = 8;
-		const rmax = Math.sqrt( mesh_surface_area / ( ( 2 * sample_count ) * Math.sqrt( 3 ) ) );
+		const rmax = this.getTargetDistance();
 
 		// # Compute a KD-tree of the input point list
 		// kdtree = KDTree(point_list)
@@ -70,8 +75,10 @@ export class BlueNoiseMeshPointsGenerator {
 			const neighbors = kdTree.query_ball_point( points_list[ i ], 2 * rmax );
 			for ( let j = 0, jl = neighbors.length; j < jl; j ++ ) {
 
-				if ( j === i ) continue;
-				W[ i ] += D[ i ][ j ];
+				const neighbor = neighbors[ j ];
+				if ( neighbor === i ) continue;
+
+				W[ i ] += D[ i ][ neighbor ];
 
 			}
 
