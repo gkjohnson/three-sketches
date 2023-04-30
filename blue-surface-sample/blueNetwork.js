@@ -4,12 +4,6 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { BlueNoiseMeshPointsGenerator } from '../common/BlueNoiseMeshPointsGenerator.js';
 import { InstancedSpheres } from '../common/objects/InstancedSphere.js';
 
-function WAIT( t ) {
-
-	return new Promise( resolve => setTimeout( resolve, t ) );
-
-}
-
 ( async () => {
 
 	const app = new App();
