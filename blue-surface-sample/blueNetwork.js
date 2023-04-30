@@ -33,10 +33,9 @@ function WAIT( t ) {
 	mesh.material.polygonOffsetUnits = 10;
 	mesh.material.polygonOffsetFactor = 10;
 
-	await WAIT( 100 );
-
 	const generator = new BlueNoiseMeshPointsGenerator( mesh );
 	generator.build();
+
 	const points = generator.generate();
 
 	const spheres = new InstancedSpheres( new MeshBasicMaterial(), generator.sampleCount );
@@ -64,9 +63,10 @@ function WAIT( t ) {
 
 	} );
 
-
 	const lineSegments = new LineSegments();
 	lineSegments.geometry.setFromPoints( segments );
+	lineSegments.material.opacity = 0.5;
+	lineSegments.material.transparent = true;
 
 	scene.add( lineSegments, spheres );
 	scene.fog = new Fog( 0, 1, 2 );
