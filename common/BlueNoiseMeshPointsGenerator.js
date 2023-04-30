@@ -48,6 +48,7 @@ export class BlueNoiseMeshPointsGenerator {
 
 		}
 
+
 		// def blue_noise_sample_elimination(point_list, mesh_surface_area, sample_count):
 		// alpha = 8
 		// rmax = numpy.sqrt(mesh_surface_area / ((2 * sample_count) * numpy.sqrt(3.)))
@@ -60,11 +61,13 @@ export class BlueNoiseMeshPointsGenerator {
 
 		// # Compute the weight for each sample
 		// D = numpy.minimum(squareform(pdist(point_list)), 2 * rmax)
-		const D = squareform( pdist( points_list ), points_list.length );
-		mapElements( D, el => Math.min( el, 2 * rmax ) );
-
 		// D = (1. - (D / (2 * rmax))) ** alpha
-		mapElements( D, el => ( 1.0 - ( el / ( 2 * rmax ) ) ) ** alpha );
+		const D = pdist( points_list ).map( el => {
+
+			el = Math.min( el, 2 * rmax );
+			return ( 1.0 - ( el / ( 2 * rmax ) ) ) ** alpha;
+
+		} );
 
 		// W = numpy.zeros(point_list.shape[0])
 		// for i in range(point_list.shape[0]):
@@ -78,7 +81,8 @@ export class BlueNoiseMeshPointsGenerator {
 				const neighbor = neighbors[ j ];
 				if ( neighbor === i ) continue;
 
-				W[ i ] += D[ i ][ neighbor ];
+				const index = getTableIndex( i, neighbor, points_list.length );
+				W[ i ] += D[ index ];
 
 			}
 
@@ -87,7 +91,7 @@ export class BlueNoiseMeshPointsGenerator {
 		// # Pick the samples we need
 		// heap = sorted((w, i) for i, w in enumerate(W))
 		const heapSort = ( a, b ) => a[ 0 ] - b[ 0 ];
-		let heap = W.map( ( v, i ) => [ v, i ] ).sort( heapSort );
+		const heap = W.map( ( v, i ) => [ v, i ] ).sort( heapSort );
 
 		// id_set = set(range(point_list.shape[0]))
 		const id_set = new Set( new Array( points_list.length ).fill().map( ( v, i ) => i ) );
@@ -108,19 +112,19 @@ export class BlueNoiseMeshPointsGenerator {
 
 			// 	heap = [(w - D[i, j], j) if j in neighbor_set else (w, j) for w, j in heap]
 			// 	heap.sort()
-			heap = heap.map( ( [ w, j ] ) => {
+			for ( let k = 0, kl = heap.length; k < kl; k ++ ) {
 
+				const info = heap[ k ];
+				const j = info[ 1 ];
 				if ( neighbor_set.has( j ) ) {
 
-					return [ w - D[ i ][ j ], j ];
-
-				} else {
-
-					return [ w, j ];
+					const index = getTableIndex( i, j, points_list.length );
+					info[ 0 ] -= D[ index ];
 
 				}
 
-			} );
+			}
+
 			heap.sort( heapSort );
 
 		}
@@ -130,6 +134,14 @@ export class BlueNoiseMeshPointsGenerator {
 		return Array.from( id_set ).map( id => points_list[ id ] );
 
 	}
+
+}
+
+function getTableIndex( i, j, dim ) {
+
+	const i2 = Math.min( i, j );
+	const j2 = Math.max( i, j );
+	return dim * i2 + j2 - Math.floor( ( i2 + 2 ) * ( i2 + 1 ) / 2 );
 
 }
 
@@ -154,54 +166,6 @@ function pdist( points ) {
 	}
 
 	return array;
-
-}
-
-function squareform( arr, count ) {
-
-	const matrix = new Array( count );
-	for ( let i = 0; i < count; i ++ ) {
-
-		const row = new Float32Array( count );
-		matrix[ i ] = row;
-		for ( let j = 0; j < count; j ++ ) {
-
-			if ( i === j ) {
-
-				row[ j ] = 0;
-
-			} else {
-
-				const m = count;
-
-				const i2 = Math.min( i, j );
-				const j2 = Math.max( i, j );
-
-				const index = m * i2 + j2 - Math.floor( ( i2 + 2 ) * ( i2 + 1 ) / 2 );
-				row[ j ] = arr[ index ];
-
-			}
-
-		}
-
-	}
-
-	return matrix;
-
-}
-
-function mapElements( matrix, cb ) {
-
-	for ( let i = 0, l = matrix.length; i < l; i ++ ) {
-
-		const row = matrix[ i ];
-		for ( let j = 0, lj = row.length; j < lj; j ++ ) {
-
-			row[ j ] = cb( row[ j ] );
-
-		}
-
-	}
 
 }
 
