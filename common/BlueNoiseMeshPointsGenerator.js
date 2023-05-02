@@ -12,6 +12,13 @@ export class BlueNoiseMeshPointsGenerator {
 		this.optionsMultiplier = 4;
 		this.surfaceArea = - 1;
 
+		this.sampler.sampleFaceIndex = function () {
+
+			const cumulativeTotal = this.distribution[ this.distribution.length - 1 ];
+			return this.binarySearch( this.randomFunction() * cumulativeTotal );
+
+		};
+
 	}
 
 	getTargetDistance() {
@@ -29,7 +36,7 @@ export class BlueNoiseMeshPointsGenerator {
 
 	}
 
-	generate() {
+	generate( outputFaceIndices = [] ) {
 
 		const { sampler, optionsMultiplier } = this;
 		if ( sampler.distribution === null ) {
@@ -40,11 +47,14 @@ export class BlueNoiseMeshPointsGenerator {
 
 		const sample_count = this.sampleCount;
 		const points_list = new Array( optionsMultiplier * sample_count );
+		const face_indices = new Array( optionsMultiplier * sample_count );
 		for ( let i = 0, l = points_list.length; i < l; i ++ ) {
 
 			const v = new Vector3();
-			sampler.sample( v );
+			const faceIndex = sampler.sampleFaceIndex();
+			sampler.sampleFace( faceIndex, v );
 			points_list[ i ] = v;
+			face_indices[ i ] = faceIndex;
 
 		}
 
@@ -129,9 +139,18 @@ export class BlueNoiseMeshPointsGenerator {
 
 		}
 
+		// output face indices
+		const idSetArray = Array.from( id_set );
+		outputFaceIndices.length = idSetArray.length;
+		idSetArray.forEach( ( id, i ) => {
+
+			outputFaceIndices[ i ] = face_indices[ id ];
+
+		} );
+
 		// # Job done
 		// return point_list[sorted(id_set)]
-		return Array.from( id_set ).map( id => points_list[ id ] );
+		return idSetArray.map( id => points_list[ id ] );
 
 	}
 
