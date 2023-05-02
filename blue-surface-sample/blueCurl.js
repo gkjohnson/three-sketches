@@ -9,9 +9,9 @@ import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { drawTrails } from '../surface-flow/src/drawTrails.js';
 
 const POINT_COUNT = 1500;
-const SEGMENTS_COUNT = 1500;
-const SPEED = 0.001 * 120;
-const LIFE = 10000;
+const SEGMENTS_COUNT = 1000;
+const SPEED = 0.002 * 120;
+const LIFE = 7000;
 
 ( async () => {
 
