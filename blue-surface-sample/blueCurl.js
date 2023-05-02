@@ -6,9 +6,10 @@ import { CurlGenerator } from '../common/CurlGenerator.js';
 import { SurfaceWalker, SurfacePoint } from '../surface-flow/src/SurfaceWalker.js';
 import { InstancedTrails } from '../common/objects/InstancedTrails.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
+import { drawTrails } from '../surface-flow/src/drawTrails.js';
 
-const POINT_COUNT = 2000;
-const SEGMENTS_COUNT = 2000;
+const POINT_COUNT = 1500;
+const SEGMENTS_COUNT = 1500;
 const SPEED = 0.001 * 120;
 const LIFE = 10000;
 
@@ -17,7 +18,7 @@ const LIFE = 10000;
 	const app = new App();
 	app.init( document.body );
 
-	const { camera, scene, renderer } = app;
+	const { camera, renderer } = app;
 	camera.position.set( 4, 4, - 7 ).multiplyScalar( 0.5 );
 	camera.lookAt( 0, 0, 0 );
 	renderer.setClearColor( 0x111111 );
@@ -27,16 +28,13 @@ const LIFE = 10000;
 	controls.autoRotate = true;
 	controls.panEnabled = false;
 
-	const mesh = new Mesh( new SphereGeometry() );
+	const mesh = new Mesh( new SphereGeometry( 1, 64, 32 ) );
 	mesh.material.color.set( 0x111111 ).convertSRGBToLinear();
-	mesh.material.opacity = 0.5;
+	mesh.material.opacity = 0.65;
 	mesh.material.transparent = true;
 	mesh.material.polygonOffset = true;
-	mesh.material.polygonOffsetUnits = 10;
-	mesh.material.polygonOffsetFactor = 10;
-
-	scene.fog = new Fog( 0, 1, 2 );
-	scene.fog.color.set( 0x111111 ).convertSRGBToLinear();
+	mesh.material.polygonOffsetUnits = 1;
+	mesh.material.polygonOffsetFactor = 1;
 
 	const surf = new SurfaceWalker( mesh.geometry );
 
@@ -46,7 +44,6 @@ const LIFE = 10000;
 	const trails = new InstancedTrails( 2 * POINT_COUNT, SEGMENTS_COUNT );
 	trails.material.opacity = 0.5;
 	trails.material.transparent = true;
-	scene.add( trails );
 
 	let points, faceIndices;
 	if ( window.location.hash === '#random' ) {
@@ -112,9 +109,6 @@ const LIFE = 10000;
 
 		controls.update();
 
-		const camDist = camera.position.length();
-		scene.fog.near = camDist - 1.5;
-		scene.fog.far = camDist + 2.5;
 
 		if ( life > 0 ) {
 
@@ -127,6 +121,10 @@ const LIFE = 10000;
 			}
 
 		}
+
+		renderer.autoClear = false;
+		renderer.clear();
+		drawTrails( renderer, camera, mesh, trails );
 
 	};
 
