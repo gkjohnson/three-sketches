@@ -43,23 +43,22 @@ import { InstancedSpheres } from '../common/objects/InstancedSphere.js';
 	const segments = [];
 	points.forEach( ( p1, i ) => {
 
-		points.forEach( ( p2, j ) => {
+		for ( let j = i + 1, l = points.length; j < l; j ++ ) {
 
-			if ( i === j ) return;
-
+			const p2 = points[ j ];
 			if ( p1.distanceTo( p2 ) < targetDistance * 2.5 ) {
 
 				segments.push( p1, p2 );
 
 			}
 
-		} );
+		}
 
 	} );
 
 	const lineSegments = new LineSegments();
 	lineSegments.geometry.setFromPoints( segments );
-	lineSegments.material.opacity = 0.5;
+	lineSegments.material.opacity = 0.75;
 	lineSegments.material.transparent = true;
 
 	scene.add( lineSegments, spheres );
