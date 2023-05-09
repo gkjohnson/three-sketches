@@ -107,7 +107,6 @@ export class BlueNoiseMeshPointsGenerator {
 		// id_set = set(range(point_list.shape[0]))
 		const id_set = new Set( new Array( points_list.length ).fill().map( ( v, i ) => i ) );
 
-		const TOT = points_list.length;
 		// while len(id_set) > sample_count:
 		while ( id_set.size > sample_count ) {
 
@@ -127,7 +126,7 @@ export class BlueNoiseMeshPointsGenerator {
 			neighbor_set.forEach( v => {
 
 				const info = heapArray[ v ];
-				const index = getTableIndex( i, v, TOT );
+				const index = getTableIndex( i, v, points_list.length );
 				info[ 0 ] -= D[ index ];
 
 			} );

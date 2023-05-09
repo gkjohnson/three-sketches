@@ -224,7 +224,12 @@ export class SurfaceWalker {
 
 		}
 
-		targetDir.copy( _ray.direction );
+		if ( targetDir ) {
+
+			targetDir.copy( _ray.direction );
+
+		}
+
 		if ( targetNormal ) {
 
 			targetNormal.copy( _frame0.normal );
