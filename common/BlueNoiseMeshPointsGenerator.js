@@ -100,12 +100,14 @@ export class BlueNoiseMeshPointsGenerator {
 
 		// # Pick the samples we need
 		// heap = sorted((w, i) for i, w in enumerate(W))
+		const heapArray = W.map( ( v, i ) => [ v, i ] );
 		const heapSort = ( a, b ) => a[ 0 ] - b[ 0 ];
-		const heap = W.map( ( v, i ) => [ v, i ] ).sort( heapSort );
+		const heap = [ ...heapArray ].sort( heapSort );
 
 		// id_set = set(range(point_list.shape[0]))
 		const id_set = new Set( new Array( points_list.length ).fill().map( ( v, i ) => i ) );
 
+		const TOT = points_list.length;
 		// while len(id_set) > sample_count:
 		while ( id_set.size > sample_count ) {
 
@@ -122,18 +124,13 @@ export class BlueNoiseMeshPointsGenerator {
 
 			// 	heap = [(w - D[i, j], j) if j in neighbor_set else (w, j) for w, j in heap]
 			// 	heap.sort()
-			for ( let k = 0, kl = heap.length; k < kl; k ++ ) {
+			neighbor_set.forEach( v => {
 
-				const info = heap[ k ];
-				const j = info[ 1 ];
-				if ( neighbor_set.has( j ) ) {
+				const info = heapArray[ v ];
+				const index = getTableIndex( i, v, TOT );
+				info[ 0 ] -= D[ index ];
 
-					const index = getTableIndex( i, j, points_list.length );
-					info[ 0 ] -= D[ index ];
-
-				}
-
-			}
+			} );
 
 			heap.sort( heapSort );
 
