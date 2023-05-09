@@ -139,7 +139,7 @@ const POINT_COUNT = 1200;
 			const p2 = points[ j ];
 			deltaVec.subVectors( p1, p2 );
 
-			const falloffDist = targetDistance * 4.5;
+			const falloffDist = targetDistance * 3.5;
 			if ( falloffDist < deltaVec.length() ) {
 
 				return;
@@ -148,7 +148,7 @@ const POINT_COUNT = 1200;
 
 			const lenDiff = Math.max( falloffDist - deltaVec.length(), 0 );
 			const force = Math.pow( lenDiff / falloffDist, 2.0 );
-			deltaVec.normalize().multiplyScalar( force * 2 );
+			deltaVec.normalize().multiplyScalar( force * 2.0 );
 
 			p1.acceleration.add( deltaVec );
 			p2.acceleration.sub( deltaVec );
@@ -160,7 +160,7 @@ const POINT_COUNT = 1200;
 			let vel = p.velocity.length();
 			if ( vel > 0 ) {
 
-				p.acceleration.addScaledVector( p.velocity, - 2.0 * delta / vel );
+				p.acceleration.addScaledVector( p.velocity, - 4.5 * delta / vel );
 
 			}
 
