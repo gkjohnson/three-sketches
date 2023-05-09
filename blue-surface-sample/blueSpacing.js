@@ -115,6 +115,13 @@ const POINT_COUNT = 1000;
 			const p2 = points[ j ];
 			deltaVec.subVectors( p1, p2 );
 
+			const falloffDist = targetDistance * 2.5;
+			if ( deltaVec.length() > falloffDist ) {
+
+				return;
+
+			}
+
 			const lenDiff = Math.max( targetDistance * 2.5 - deltaVec.length(), 0 );
 			deltaVec.normalize().multiplyScalar( lenDiff );
 
@@ -130,7 +137,7 @@ const POINT_COUNT = 1000;
 
 			// p.addScaledVector( vectors[ i ], 0.01 );
 
-			vectors[ i ].multiplyScalar( 10 * delta );
+			vectors[ i ].multiplyScalar( 2 * delta );
 			const surfacePoint = new SurfacePoint();
 			surfacePoint.copy( p );
 			surfacePoint.index = faceIndices[ i ];

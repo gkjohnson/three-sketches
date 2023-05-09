@@ -6,7 +6,7 @@ import { InstancedSpheres } from '../common/objects/InstancedSphere.js';
 import { MeshSurfaceSampler } from 'three/addons/math/MeshSurfaceSampler.js';
 import { SurfaceWalker, SurfacePoint } from '../surface-flow/src/SurfaceWalker.js';
 
-const POINT_COUNT = 1000;
+const POINT_COUNT = 1200;
 ( async () => {
 
 	const app = new App();
@@ -18,10 +18,17 @@ const POINT_COUNT = 1000;
 	renderer.setClearColor( 0x111111 );
 
 	const mouse = new Vector2( - 1, - 1 );
+	let mouseDown = false;
 	window.addEventListener( 'pointermove', e => {
 
 		mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
 		mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
+
+	} );
+
+	window.addEventListener( 'pointerdown', e => {
+
+		mouseDown = true;
 
 	} );
 
@@ -113,10 +120,13 @@ const POINT_COUNT = 1000;
 
 				deltaVec.subVectors( p, hitPoint );
 
-				const falloffDist = targetDistance * 10;
+				const forceMultiplier = mouseDown ? 200 : 5;
+				const distMult = mouseDown ? 20 : 10;
+
+				const falloffDist = targetDistance * distMult;
 				const lenDiff = Math.max( falloffDist - deltaVec.length(), 0 );
 				const force = Math.pow( lenDiff / falloffDist, 2.0 );
-				deltaVec.normalize().multiplyScalar( force * 5 );
+				deltaVec.normalize().multiplyScalar( force * forceMultiplier );
 				p.acceleration.add( deltaVec );
 
 			} );
@@ -129,7 +139,13 @@ const POINT_COUNT = 1000;
 			const p2 = points[ j ];
 			deltaVec.subVectors( p1, p2 );
 
-			const falloffDist = targetDistance * 3;
+			const falloffDist = targetDistance * 4.5;
+			if ( falloffDist < deltaVec.length() ) {
+
+				return;
+
+			}
+
 			const lenDiff = Math.max( falloffDist - deltaVec.length(), 0 );
 			const force = Math.pow( lenDiff / falloffDist, 2.0 );
 			deltaVec.normalize().multiplyScalar( force * 2 );
@@ -144,7 +160,7 @@ const POINT_COUNT = 1000;
 			let vel = p.velocity.length();
 			if ( vel > 0 ) {
 
-				p.acceleration.addScaledVector( p.velocity, - 1.5 * delta / vel );
+				p.acceleration.addScaledVector( p.velocity, - 2.0 * delta / vel );
 
 			}
 
@@ -165,8 +181,10 @@ const POINT_COUNT = 1000;
 		} );
 
 		const camDist = camera.position.length();
-		scene.fog.near = camDist - 1.5;
-		scene.fog.far = camDist + 2.5;
+		scene.fog.near = camDist - 1;
+		scene.fog.far = camDist + 3;
+
+		mouseDown = false;
 
 	};
 
