@@ -9,3 +9,5 @@ Experiments in sampling surfaces with blue noise distribution based on [this imp
 [Blue Curl](https://gkjohnson.github.io/three-sketches/blue-surface-sample/blueCurl.html)
 
 [Iterative Blue Space](https://gkjohnson.github.io/three-sketches/blue-surface-sample/blueSpacing.html)
+
+[Iterative Blue Spring](https://gkjohnson.github.io/three-sketches/blue-surface-sample/blueSpring.html)
