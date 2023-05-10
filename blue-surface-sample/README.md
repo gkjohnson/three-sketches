@@ -10,4 +10,4 @@ Experiments in sampling surfaces with blue noise distribution based on [this imp
 
 [Iterative Blue Space](https://gkjohnson.github.io/three-sketches/blue-surface-sample/blueSpacing.html)
 
-[Iterative Blue Physics](https://gkjohnson.github.io/three-sketches/blue-surface-sample/bluePhysics.html)
+[Iterative Blue Forces](https://gkjohnson.github.io/three-sketches/blue-surface-sample/blueForces.html)
