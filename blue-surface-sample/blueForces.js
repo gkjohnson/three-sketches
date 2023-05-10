@@ -162,7 +162,7 @@ const POINT_COUNT = 1200;
 			let vel = p.velocity.length();
 			if ( vel > 0 ) {
 
-				p.acceleration.addScaledVector( p.velocity, - 4.5 * 0.1 / vel );
+				p.acceleration.addScaledVector( p.velocity, - 4.5 * 0.12 / vel );
 
 			}
 
