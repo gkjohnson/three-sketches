@@ -141,7 +141,7 @@ const POINT_COUNT = 1200;
 			const p2 = points[ j ];
 			deltaVec.subVectors( p1, p2 );
 
-			const falloffDist = targetDistance * 3.5;
+			const falloffDist = targetDistance * 4;
 			if ( falloffDist < deltaVec.length() ) {
 
 				return;
