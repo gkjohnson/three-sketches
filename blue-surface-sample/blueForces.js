@@ -29,6 +29,8 @@ const POINT_COUNT = 1200;
 	window.addEventListener( 'pointerdown', e => {
 
 		mouseDown = true;
+		mouse.x = ( e.clientX / window.innerWidth ) * 2 - 1;
+		mouse.y = - ( e.clientY / window.innerHeight ) * 2 + 1;
 
 	} );
 
@@ -160,7 +162,7 @@ const POINT_COUNT = 1200;
 			let vel = p.velocity.length();
 			if ( vel > 0 ) {
 
-				p.acceleration.addScaledVector( p.velocity, - 4.5 * delta / vel );
+				p.acceleration.addScaledVector( p.velocity, - 4.5 * 0.1 / vel );
 
 			}
 
